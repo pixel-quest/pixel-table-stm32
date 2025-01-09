@@ -1,0 +1,43 @@
+#ifndef __CONFIG_H
+#define __CONFIG_H
+
+typedef struct {
+	// General
+	uint16_t Special_Chars;
+	uint16_t CAN_Address;
+	uint8_t Pixel_Address;
+	uint8_t Last_Pixel_Num;
+	uint8_t Click_Dupl_Per;
+	uint8_t Click_Off_Dupl_Msgs;
+
+	// Frame
+	int32_t Frame_Coeff;
+	uint8_t Frame_Click_Threshold; // kg
+	uint8_t Frame_Click_Hysteresis; // kg
+
+	// Defect
+	bool Frame_Defect_A;
+	bool Touch_Defect_B;
+} Config_t;
+
+typedef struct {
+	uint32_t data32[FLASH_CONFIG_SIZE_WORDS-1];
+	uint32_t CRC32;
+} FLASH_Sector_t;
+
+union ConfigNVRAM {
+	Config_t config;
+	FLASH_Sector_t sector;
+	uint32_t data32[FLASH_CONFIG_SIZE_WORDS];
+};
+
+extern union ConfigNVRAM GlobalConfig;
+
+void Read_Global_Config();
+void Save_Global_Config();
+
+bool Read_Config_From_Page(union ConfigNVRAM *, uint8_t);
+void Set_Default_Config(union ConfigNVRAM *);
+void Save_Config_On_Page(union ConfigNVRAM *, uint8_t);
+
+#endif /* __CONFIG_H */

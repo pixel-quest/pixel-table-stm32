@@ -1,0 +1,47 @@
+// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
+//
+// PIO Unified Debugger
+//
+// Documentation: https://docs.platformio.org/page/plus/debugging.html
+// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug",
+            "executable": "/Users/a.bezgubenko/STM32CubeIDE/workspace_1.11.0/stm32f103pixel/.pio/build/genericSTM32F103C8/firmware.elf",
+            "projectEnvName": "genericSTM32F103C8",
+            "toolchainBinDir": "/Users/a.bezgubenko/.platformio/packages/toolchain-gccarmnoneeabi@1.70201.0/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "svdPath": "/Users/a.bezgubenko/.platformio/platforms/ststm32/misc/svd/STM32F103xx.svd",
+            "preLaunchTask": {
+                "type": "PlatformIO",
+                "task": "Pre-Debug"
+            }
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (skip Pre-Debug)",
+            "executable": "/Users/a.bezgubenko/STM32CubeIDE/workspace_1.11.0/stm32f103pixel/.pio/build/genericSTM32F103C8/firmware.elf",
+            "projectEnvName": "genericSTM32F103C8",
+            "toolchainBinDir": "/Users/a.bezgubenko/.platformio/packages/toolchain-gccarmnoneeabi@1.70201.0/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "svdPath": "/Users/a.bezgubenko/.platformio/platforms/ststm32/misc/svd/STM32F103xx.svd"
+        },
+        {
+            "type": "platformio-debug",
+            "request": "launch",
+            "name": "PIO Debug (without uploading)",
+            "executable": "/Users/a.bezgubenko/STM32CubeIDE/workspace_1.11.0/stm32f103pixel/.pio/build/genericSTM32F103C8/firmware.elf",
+            "projectEnvName": "genericSTM32F103C8",
+            "toolchainBinDir": "/Users/a.bezgubenko/.platformio/packages/toolchain-gccarmnoneeabi@1.70201.0/bin",
+            "internalConsoleOptions": "openOnSessionStart",
+            "svdPath": "/Users/a.bezgubenko/.platformio/platforms/ststm32/misc/svd/STM32F103xx.svd",
+            "loadMode": "manual"
+        }
+    ]
+}
