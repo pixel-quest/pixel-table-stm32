@@ -109,14 +109,6 @@ uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value
 	//	return 0;
 
 	switch (regNum) {
-	case 0: // REGISTER_CAN_ADDRESS
-//		if (!LastClicks.TotalClick) {
-//			Set_Red_msec(250);
-//			return 0; // присвоение адреса возможно только при нажатом пикселе
-//		}
-		GlobalConfig.config.CAN_Address = (uint16_t)value;
-		CAN_ReConfig_Target_Filter(GlobalConfig.config.CAN_Address);
-		break;
 	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
 		GlobalConfig.config.Click_Off_Dupl_Msgs = (uint8_t)value;
 		break;
@@ -133,10 +125,6 @@ uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value
 	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
 		if (value < 1 || value > 100) break;
 		GlobalConfig.config.Frame_Click_Hysteresis = (uint8_t)value;
-		break;
-	case 21: // REGISTER_LAST_PIXEL_NUM
-		if (value > 64) break;
-		GlobalConfig.config.Last_Pixel_Num = (uint8_t)value;
 		break;
 	}
 
@@ -209,9 +197,6 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
 		value = (int32_t)GlobalConfig.config.Frame_Click_Hysteresis;
 	    break;
-	case 21: // REGISTER_LAST_PIXEL_NUM
-		value = (int32_t)GlobalConfig.config.Last_Pixel_Num;
-		break;
 	}
 
 	uint8_t* pValue = (uint8_t *)&value;

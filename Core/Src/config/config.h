@@ -5,8 +5,6 @@ typedef struct {
 	// General
 	uint16_t Special_Chars;
 	uint16_t CAN_Address;
-	uint8_t Pixel_Address;
-	uint8_t Last_Pixel_Num;
 	uint8_t Click_Dupl_Per;
 	uint8_t Click_Off_Dupl_Msgs;
 

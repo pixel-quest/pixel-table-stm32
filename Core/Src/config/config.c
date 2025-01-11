@@ -58,15 +58,7 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 	// General
 	configNVRAM->config.Special_Chars = SPECIAL_CHARS;
 	configNVRAM->config.CAN_Address = DEFAULT_DEVICE_CAN_ADDRESS;
-	configNVRAM->config.Pixel_Address = 0;
-	configNVRAM->config.Last_Pixel_Num = 0;
-	configNVRAM->config.Click_Dupl_Per = DEFAULT_CLICK_DUPLICATE_PER;
 	configNVRAM->config.Click_Off_Dupl_Msgs = DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES;
-
-	// Frame
-	configNVRAM->config.Frame_Coeff = DEFAULT_FRAME_COEFF;
-	configNVRAM->config.Frame_Click_Threshold = DEFAULT_FRAME_CLICK_THRESHOLD;
-	configNVRAM->config.Frame_Click_Hysteresis = DEFAULT_FRAME_CLICK_HYSTERESIS;
 
 	// Defect
 	configNVRAM->config.Frame_Defect_A = false;
