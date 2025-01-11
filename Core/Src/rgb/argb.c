@@ -212,7 +212,7 @@ void ARGB_SetRGB(u16_t i, u8_t r, u8_t g, u8_t b) {
     b = scale8(b, 0xF0);
 #endif
     // Subpixel chain order
-#if defined(SK6812) || defined(WS2811F) || defined(WS2811S)
+#if defined(SK6812) || defined(WS2811S)
     const u8_t subp1 = r;
     const u8_t subp2 = g;
     const u8_t subp3 = b;

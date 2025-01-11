@@ -27,7 +27,7 @@
 #include "sensors/sensors.h"
 #include "idle/idle.h"
 #include "protocol/protocol.h"
-#include "rgb/ws2812s.h"
+#include "rgb/ws2812.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

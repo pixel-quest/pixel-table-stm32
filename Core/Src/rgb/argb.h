@@ -26,7 +26,7 @@
  * @{
  */
 
-#define WS2811S       ///< Family: {WS2811S, WS2811F, WS2812, SK6812}
+#define WS2811F       ///< Family: {WS2811S, WS2811F, WS2812, SK6812}
 // WS2811S — RGB, 400kHz;
 // WS2811F — RGB, 800kHz;
 // WS2812  — GRB, 800kHz;
