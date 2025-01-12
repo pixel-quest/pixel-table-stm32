@@ -76,7 +76,6 @@ extern CAN_HandleTypeDef hcan;
 extern CRC_HandleTypeDef hcrc;
 extern TIM_HandleTypeDef htim1;
 extern TIM_HandleTypeDef htim2;
-extern DMA_HandleTypeDef hdma_tim4_ch3;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

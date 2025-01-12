@@ -1,5 +1,6 @@
 #include "main.h"
 #include "sensors.h"
+#include "vcnl36821s.h"
 #include "../protocol/protocol.h"
 #include "../events/events.h"
 #include "../config/config.h"
@@ -36,13 +37,20 @@ const IOPin_t S23 = {GPIOB, LL_GPIO_PIN_0};
 const IOPin_t S24 = {GPIOB, LL_GPIO_PIN_1};
 const IOPin_t S25 = {GPIOB, LL_GPIO_PIN_10};
 
-//LL_GPIO_SetPinMode ( MDIO_GPIO_Port, MDIO_Pin, LL_GPIO_MODE_OUTPUT );
-//LL_GPIO_SetPinMode ( MDIO_GPIO_Port, MDIO_Pin, LL_GPIO_MODE_INPUT );
+void test(bool success) {
+	__NOP();
+}
 
 void Sensors_Config() {
-
+	LL_GPIO_SetPinMode(S1.port, S1.pin, LL_GPIO_MODE_INPUT);
+	bool success = vcnl36821s_init();
+	test(success);
 }
 
 void Sensors_Event_loop() {
 
+
+	uint16_t result;
+	bool success = vcnl36821s_read_data(&result);
+	test(success);
 }
