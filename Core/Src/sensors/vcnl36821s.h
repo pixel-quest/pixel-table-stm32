@@ -25,10 +25,10 @@
 // Table 2 PS_CONF1_LOW
 #define VCNL36821S_PS_CONF1_LOW_PS_INIT			0x01<<7 // must be set to 1 when power on ready
 #define VCNL36821S_PS_CONF1_LOW_PS_ON			0x01<<1
-#define VCNL36821S_PS_CONF1_LOW_PS_RESERVERD	0x01<<0
+#define VCNL36821S_PS_CONF1_LOW_PS_RESERVERD	0x01<<0 // must be always 1
 
 // Table 3 PS_CONF1_HIGH
-#define VCNL36821S_PS_CONF1_HIGH_RESERVED				0x01<<1 // must be set to 1 when power on ready
+#define VCNL36821S_PS_CONF1_HIGH_RESERVED		0x01<<1 // must be set to 1 when power on ready
 
 // Table 4 PS_CONF2_LOW
 #define VCNL36821S_PS_PERIOD_10ms   0x00<<6
@@ -81,6 +81,6 @@
 
 // Exports
 bool vcnl36821s_init();
-bool vcnl36821s_read_data(uint16_t *dest);
+bool vcnl36821s_read(uint16_t *data);
 
 #endif /* SRC_SENSORS_VCNL36821S_H_ */

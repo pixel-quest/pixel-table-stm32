@@ -42,15 +42,13 @@ void test(bool success) {
 }
 
 void Sensors_Config() {
-	LL_GPIO_SetPinMode(S1.port, S1.pin, LL_GPIO_MODE_INPUT);
+	// LL_GPIO_SetPinMode(S8.port, S8.pin, LL_GPIO_MODE_INPUT);
 	bool success = vcnl36821s_init();
 	test(success);
 }
 
 void Sensors_Event_loop() {
-
-
 	uint16_t result;
-	bool success = vcnl36821s_read_data(&result);
+	bool success = vcnl36821s_read(&result);
 	test(success);
 }
