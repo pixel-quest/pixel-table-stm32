@@ -2,15 +2,14 @@
 #define SRC_SENSORS_VCNL36821S_H_
 
 // Defines
-#define VCNL36821S_I2C_HANDLE 		hi2c1
+#define hi2c 						hi2c1
 #define VCNL36821S_I2C_TIMEOUT 		10
 #define VCNL36821S_SLAVE_ADDRESS	0x60 << 1
 
 // Table 1 Registers
 #define VCNL36821S_PS_CONF1      	0x00 // R/W
 #define VCNL36821S_PS_CONF2      	0x03 // R/W
-#define VCNL36821S_PS_CONF3      	0x04 // R/W
-#define VCNL36821S_PS_CONF4      	0x04 // R/W
+#define VCNL36821S_PS_CONF34      	0x04 // R/W
 #define VCNL36821S_PS_THDL     		0x05 // R/W
 #define VCNL36821S_PS_THDH    		0x06 // R/W
 #define VCNL36821S_PS_CANC     		0x07 // R/W
@@ -81,6 +80,6 @@
 
 // Exports
 bool vcnl36821s_init();
-bool vcnl36821s_read(uint16_t *data);
+bool vcnl36821s_read(uint8_t reg, uint16_t *dest);
 
 #endif /* SRC_SENSORS_VCNL36821S_H_ */
