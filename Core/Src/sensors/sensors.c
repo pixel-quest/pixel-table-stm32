@@ -49,6 +49,6 @@ void Sensors_Config() {
 
 void Sensors_Event_loop() {
 	uint16_t result;
-	bool success = vcnl36821s_read(VCNL36821S_ID, &result);
+	bool success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 	test(success);
 }
