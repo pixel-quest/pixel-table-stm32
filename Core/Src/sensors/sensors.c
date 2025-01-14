@@ -39,10 +39,10 @@ const IOPin_t S25 = {GPIOB, LL_GPIO_PIN_10};
 
 void Sensors_Config() {
 	LL_GPIO_InitTypeDef GPIO_InitStruct = {
-			Pin: S1.pin,
+			Pin: S25.pin,
 			Mode: LL_GPIO_MODE_FLOATING,
 	};
-	LL_GPIO_Init(S1.port, &GPIO_InitStruct);
+	LL_GPIO_Init(S25.port, &GPIO_InitStruct);
 
 	vcnl36821s_init();
 }
