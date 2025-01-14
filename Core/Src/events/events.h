@@ -4,7 +4,7 @@
 enum {
 	EVNT_IDLE_MODE,
 	EVNT_RESET_PIXEL_COLOR,
-	EVNT_TIME_TO_SET_PIXELS,
+	EVNT_SET_PIXELS,
 
 	CNT_EVENTS  //count of registered events
 };

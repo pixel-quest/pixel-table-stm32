@@ -4,6 +4,8 @@
 #include "stdbool.h"
 #include "string.h"
 
+#define NUM_PIXELS 		25
+
 // ======= FLASH Config
 #define FLASH_END_ADDR 				    0x0800FFFFU // STM32F103C8
 #define FLASH_CONFIG_PAGES 			    2
