@@ -32,7 +32,7 @@
 // WS2812  — GRB, 800kHz;
 // SK6812  — RGBW, 800kHz
 
-#define NUM_PIXELS 25 ///< Pixel quantity
+#define NUM_PIXELS 5 ///< Pixel quantity
 
 #define USE_GAMMA_CORRECTION 1 ///< Gamma-correction should fix red&green, try for yourself
 

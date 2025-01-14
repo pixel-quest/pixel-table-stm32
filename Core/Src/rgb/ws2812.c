@@ -3,10 +3,12 @@
 #include "argb.h"
 #include "../events/events.h"
 
+#define JUMP_DELAY 1000
+
 void Reset_Leds() {
 	ARGB_Init();
 	ARGB_Clear();
-	Set_Event(EVNT_TIME_TO_SET_PIXELS, 100);
+	Set_Event(EVNT_TIME_TO_SET_PIXELS, JUMP_DELAY);
 }
 
 void Led_Event_loop() {
@@ -53,6 +55,6 @@ void Led_Event_loop() {
 			if (++stage > 5) stage = 0;
 		}
 
-		Set_Event(EVNT_TIME_TO_SET_PIXELS, 100);
+		Set_Event(EVNT_TIME_TO_SET_PIXELS, JUMP_DELAY);
 	}
 }

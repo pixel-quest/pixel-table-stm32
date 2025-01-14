@@ -13,8 +13,7 @@
 #define VCNL36821S_PS_THDL     		0x05 // R/W
 #define VCNL36821S_PS_THDH    		0x06 // R/W
 #define VCNL36821S_PS_CANC     		0x07 // R/W
-#define VCNL36821S_PS_AC_L      	0x08 // R/W
-#define VCNL36821S_PS_LPPERI      	0x08 // R/W
+#define VCNL36821S_PS_AC_L_LPPERI   0x08 // R/W
 
 #define VCNL36821S_PS_DATA      	0xF8 // R
 #define VCNL36821S_INT_FLAG      	0xF9 // R
@@ -67,6 +66,15 @@
 #define VCNL36821S_PS_SP_INT   		0x01<<2
 
 // Table 7 PS_CONF4
+#define VCNL36821S_PS_SC      		0x07<<5 // sunlight cancellation
+#define VCNL36821S_LED_I_50ma      	0x08<<0
+#define VCNL36821S_LED_I_66ma      	0x09<<0
+#define VCNL36821S_LED_I_82ma      	0x0A<<0
+#define VCNL36821S_LED_I_98ma      	0x0B<<0
+#define VCNL36821S_LED_I_114ma      0x0C<<0
+#define VCNL36821S_LED_I_130ma      0x0D<<0
+#define VCNL36821S_LED_I_144ma      0x0E<<0
+#define VCNL36821S_LED_I_156ma      0x0F<<0
 
 // Table 8 PS_THDL
 

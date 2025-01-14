@@ -37,18 +37,21 @@ const IOPin_t S23 = {GPIOB, LL_GPIO_PIN_0};
 const IOPin_t S24 = {GPIOB, LL_GPIO_PIN_1};
 const IOPin_t S25 = {GPIOB, LL_GPIO_PIN_10};
 
-void test(bool success) {
-	__NOP();
+void Sensors_Config() {
+	LL_GPIO_InitTypeDef GPIO_InitStruct = {
+			Pin: S1.pin,
+			Mode: LL_GPIO_MODE_FLOATING,
+	};
+	LL_GPIO_Init(S1.port, &GPIO_InitStruct);
+
+	vcnl36821s_init();
 }
 
-void Sensors_Config() {
-	// LL_GPIO_SetPinMode(S8.port, S8.pin, LL_GPIO_MODE_INPUT);
-	bool success = vcnl36821s_init();
-	test(success);
-}
+uint16_t distance;
 
 void Sensors_Event_loop() {
 	uint16_t result;
-	bool success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
-	test(success);
+	if (vcnl36821s_read(VCNL36821S_PS_DATA, &result)) {
+		distance = result;
+	}
 }
