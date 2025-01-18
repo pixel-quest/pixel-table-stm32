@@ -114,7 +114,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 			break;
 		case COMMAND_REQ_SET_COLOR_RGB:
 			if (pixelNum == 0) { // it't for me
-				if (Test_Event_Clr(EVNT_RESET_PIXEL_COLOR)) { // ignore external commands if indicate something
+				if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
 					// Set_Pixel_Color_RGB(msgData[2], msgData[3], msgData[4]);
 				}
 			}

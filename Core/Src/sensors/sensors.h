@@ -4,6 +4,7 @@
 typedef struct {
 	uint16_t Value;
 	uint16_t Offset;
+	bool Click;
 } Sensor_t;
 
 extern Sensor_t Sensors[NUM_PIXELS];
