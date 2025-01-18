@@ -1,3 +1,6 @@
+// STM32F10xx8 STM32F10xxB Errata sheet
+// https://istarik.ru/blog/stm32/123.html
+
 #ifndef I2C_ER_H_
 #define I2C_ER_H_
 

@@ -25,9 +25,8 @@
 #include "can/can.h"
 #include "events/events.h"
 #include "sensors/sensors.h"
-#include "idle/idle.h"
 #include "protocol/protocol.h"
-#include "rgb/ws2812.h"
+#include "rgb/leds.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -102,6 +101,8 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  // STM32F10xx8 STM32F10xxB Errata sheet
+  //  see https://istarik.ru/blog/stm32/123.html
   __HAL_RCC_I2C1_CLK_ENABLE();
   HAL_Delay(100);
   __HAL_RCC_I2C1_FORCE_RESET();
@@ -126,21 +127,15 @@ int main(void)
   CAN_Config();
   Sensors_Config();
 
-  // Убрал белый и задержку для тихого рестарта во время игры
-  // Set_White_msec(0);
-  // HAL_Delay(1000);
-
   Reset_Leds();
-  Reset_Idle_Mode();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
   while (1) {
-	Led_Event_loop();
 	Sensors_Event_loop();
-	Idle_Rainbow_If_Needed();
+	Led_Event_loop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

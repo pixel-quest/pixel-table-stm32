@@ -45,7 +45,7 @@ bool vcnl36821s_init() {
 
 	success &= vcnl36821s_write(VCNL36821S_PS_CONF2, VCNL36821S_PS_ST_START | VCNL36821S_PS_PERIOD_20ms, 0x00);
 
-	success &= vcnl36821s_write(VCNL36821S_PS_CONF34, 0x00, VCNL36821S_PS_SC | VCNL36821S_LED_I_144ma);
+	success &= vcnl36821s_write(VCNL36821S_PS_CONF34, 0x00, VCNL36821S_PS_SC | VCNL36821S_LED_I_156ma);
 
 	return success;
 }
@@ -53,15 +53,14 @@ bool vcnl36821s_init() {
 bool vcnl36821s_read(uint8_t reg, uint16_t *dest) {
 	HAL_StatusTypeDef status;
 
-	for (uint8_t i = 0; i < 10; i++) { // I2C_ClearBusyFlagErratum() срабатывает не с первого раза
-		__disable_irq();
-		status = HAL_I2C_Mem_Read(&hi2c, VCNL36821S_SLAVE_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)dest, 2, VCNL36821S_I2C_TIMEOUT);
-		__enable_irq();
-		if (status == HAL_BUSY)
-			I2C_ClearBusyFlagErratum(&hi2c, VCNL36821S_I2C_TIMEOUT);
-		else break;
-	}
-	if (status != HAL_OK) {
+	__disable_irq();
+	status = HAL_I2C_Mem_Read(&hi2c, VCNL36821S_SLAVE_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)dest, 2, VCNL36821S_I2C_TIMEOUT);
+	__enable_irq();
+	if (status == HAL_BUSY)
+		// I2C_ClearBusyFlagErratum() бывает срабатывает не с первого раза,
+		// 	но тут мы в круговом цикле опроса всех датчиков
+		I2C_ClearBusyFlagErratum(&hi2c, VCNL36821S_I2C_TIMEOUT);
+	else if (status != HAL_OK) {
 		return false;
 	}
 

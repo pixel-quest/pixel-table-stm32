@@ -1,6 +1,13 @@
 #ifndef SRC_SENSORS_LOOP_H_
 #define SRC_SENSORS_LOOP_H_
 
+typedef struct {
+	uint16_t Value;
+	uint16_t Offset;
+} Sensor_t;
+
+extern Sensor_t Sensors[NUM_PIXELS];
+
 void Sensors_Config();
 void Sensors_Event_loop();
 

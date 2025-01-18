@@ -5,7 +5,7 @@ union ConfigNVRAM GlobalConfig;
 
 // Дополнительный контроль адекватности конфига
 // помогает проверять также при сохранении
-#define SPECIAL_CHARS (uint16_t)0xABBC
+#define SPECIAL_CHARS (uint16_t)0xABCD
 
 void Read_Global_Config() {
 	bool goodPages[FLASH_CONFIG_PAGES];
@@ -20,8 +20,8 @@ void Read_Global_Config() {
 	if (GlobalConfig.config.Special_Chars != SPECIAL_CHARS ||
 			GlobalConfig.config.Click_Dupl_Per == 0 ||
 			GlobalConfig.config.Click_Off_Dupl_Msgs == 0 ||
-			GlobalConfig.config.Frame_Click_Threshold == 0 ||
-			GlobalConfig.config.Frame_Coeff == 0)
+			GlobalConfig.config.Sensor_Click_Threshold == 0 ||
+			GlobalConfig.config.Sensor_Coeff == 0)
 		atLeastOneSuccess = false;
 
 	if (!atLeastOneSuccess)
@@ -60,9 +60,14 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 	configNVRAM->config.CAN_Address = DEFAULT_DEVICE_CAN_ADDRESS;
 	configNVRAM->config.Click_Off_Dupl_Msgs = DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES;
 
-	// Defect
-	configNVRAM->config.Frame_Defect_A = false;
-	configNVRAM->config.Touch_Defect_B = false;
+	// Sensors
+	configNVRAM->config.Sensor_Click_Threshold = DEFAULT_CLICK_THRESHOLD;
+	configNVRAM->config.Sensor_Click_Hysteresis = DEFAULT_CLICK_HYSTERESIS;
+
+	for (uint8_t i=0; i<NUM_PIXELS; i++) {
+		configNVRAM->config.Sensor_Coeff[i] = DEFAULT_SENSOR_COEFF;
+		configNVRAM->config.Sensor_Defect[i] = false;
+	}
 }
 
 void Save_Global_Config() {

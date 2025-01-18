@@ -1,6 +1,8 @@
 #include "main.h"
-#include "../sensors/sensors.h"
+#include "argb.h"
+#include "leds.h"
 #include "../events/events.h"
+#include "../sensors/sensors.h"
 
 #define EVENT_IDLE_MODE_TIMEOUT		5000 // ms
 #define EVENT_IDLE_MODE_STEP		30 // ms
@@ -10,7 +12,7 @@ void Reset_Idle_Mode() {
 	Set_Event(EVNT_IDLE_MODE, EVENT_IDLE_MODE_TIMEOUT);
 }
 
-// Режим простоя, просто крутим радугу и подсвечиваем клики
+// Режим простоя без связи, просто крутим радугу и подсвечиваем клики
 void Idle_Rainbow_If_Needed() {
 	static uint8_t RAINBOW_STAGE = 0;
 	static uint8_t R = MAX_RAINBOW_BRIGHT;
@@ -48,4 +50,17 @@ void Idle_Rainbow_If_Needed() {
 
 		//Set_Pixel_Color_RGB(R, G, B);
 	}
+}
+
+void Reset_Leds() {
+	ARGB_Init();
+	ARGB_Clear();
+	Reset_Idle_Mode();
+}
+
+void Led_Event_loop() {
+	if (ARGB_Ready() == ARGB_READY) {
+		ARGB_Show();
+	}
+	Idle_Rainbow_If_Needed();
 }

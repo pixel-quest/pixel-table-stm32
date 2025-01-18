@@ -115,16 +115,13 @@ uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value
 	case 6: // REGISTER_CLICK_ON_DUPL_PER
 		GlobalConfig.config.Click_Dupl_Per = (uint8_t)value;
 		break;
-	case 17: // REGISTER_FRAME_COEFF
-		GlobalConfig.config.Frame_Coeff = value;
-		break;
 	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
-		if (value < 1 || value > 100) break;
-		GlobalConfig.config.Frame_Click_Threshold = (uint8_t)value;
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Click_Threshold = (uint8_t)value;
 		break;
 	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
-		if (value < 1 || value > 100) break;
-		GlobalConfig.config.Frame_Click_Hysteresis = (uint8_t)value;
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Click_Hysteresis = (uint8_t)value;
 		break;
 	}
 
@@ -139,11 +136,7 @@ void Defect(uint8_t defect) {
 		//Set_Yellow_msec(250);
 	}
 
-	GlobalConfig.config.Frame_Defect_A = (defect >> 1) & 1;
-	GlobalConfig.config.Touch_Defect_B = (defect) & 1;
-
 	Save_Global_Config();
-	//Actualize_Clicks();
 }
 
 // Commands Responses
@@ -188,14 +181,11 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 	case 10: // REGISTER_STATUS
 		//value = (int32_t)LastClicks.TotalStatus;
 	    break;
-	case 17: // REGISTER_FRAME_COEFF
-		value = (int32_t)GlobalConfig.config.Frame_Coeff;
-	    break;
 	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
-		value = (int32_t)GlobalConfig.config.Frame_Click_Threshold;
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Threshold;
 	    break;
 	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
-		value = (int32_t)GlobalConfig.config.Frame_Click_Hysteresis;
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Hysteresis;
 	    break;
 	}
 

@@ -3,7 +3,7 @@
 #include "../protocol/protocol.h"
 #include "../config/config.h"
 #include "../events/events.h"
-#include "../idle/idle.h"
+#include "../rgb/leds.h"
 
 const IOPin_t SW1 = {GPIOA, LL_GPIO_PIN_14};
 const IOPin_t SW2 = {GPIOA, LL_GPIO_PIN_10};
@@ -106,13 +106,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 		return; // ignore any other cases
 	}
 
+	Reset_Idle_Mode();
+
 	switch (command) {
 		case COMMAND_REQ_PING:
 			__NOP();
 			break;
 		case COMMAND_REQ_SET_COLOR_RGB:
 			if (pixelNum == 0) { // it't for me
-				Reset_Idle_Mode(); // сделал сброс idle режима по аналогии со slave, только на команду цвета
 				if (Test_Event_Clr(EVNT_RESET_PIXEL_COLOR)) { // ignore external commands if indicate something
 					// Set_Pixel_Color_RGB(msgData[2], msgData[3], msgData[4]);
 				}

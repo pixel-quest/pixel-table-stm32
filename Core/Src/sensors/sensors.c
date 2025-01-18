@@ -5,40 +5,40 @@
 #include "../events/events.h"
 #include "../config/config.h"
 #include "../can/can.h"
-#include "../rgb/argb.h"
 
-// Defines
-const IOPin_t S[] = {
-		{GPIOC, LL_GPIO_PIN_13},
-		{GPIOB, LL_GPIO_PIN_9},
-		{GPIOB, LL_GPIO_PIN_4},
-		{GPIOB, LL_GPIO_PIN_3},
-		{GPIOA, LL_GPIO_PIN_15},
+const IOPin_t Sensor_Pins[NUM_PIXELS] = {
+	{GPIOC, LL_GPIO_PIN_13},
+	{GPIOB, LL_GPIO_PIN_9},
+	{GPIOB, LL_GPIO_PIN_4},
+	{GPIOB, LL_GPIO_PIN_3},
+	{GPIOA, LL_GPIO_PIN_15},
 
-		{GPIOC, LL_GPIO_PIN_15},
-		{GPIOC, LL_GPIO_PIN_14},
-		{GPIOB, LL_GPIO_PIN_5},
-		{GPIOB, LL_GPIO_PIN_14},
-		{GPIOB, LL_GPIO_PIN_15},
+	{GPIOC, LL_GPIO_PIN_15},
+	{GPIOC, LL_GPIO_PIN_14},
+	{GPIOB, LL_GPIO_PIN_5},
+	{GPIOB, LL_GPIO_PIN_14},
+	{GPIOB, LL_GPIO_PIN_15},
 
-		{GPIOA, LL_GPIO_PIN_0},
-		{GPIOA, LL_GPIO_PIN_3},
-		{GPIOA, LL_GPIO_PIN_6},
-		{GPIOB, LL_GPIO_PIN_12},
-		{GPIOB, LL_GPIO_PIN_13},
+	{GPIOA, LL_GPIO_PIN_0},
+	{GPIOA, LL_GPIO_PIN_3},
+	{GPIOA, LL_GPIO_PIN_6},
+	{GPIOB, LL_GPIO_PIN_12},
+	{GPIOB, LL_GPIO_PIN_13},
 
-		{GPIOA, LL_GPIO_PIN_1},
-		{GPIOA, LL_GPIO_PIN_4},
-		{GPIOA, LL_GPIO_PIN_7},
-		{GPIOB, LL_GPIO_PIN_2},
-		{GPIOB, LL_GPIO_PIN_11},
+	{GPIOA, LL_GPIO_PIN_1},
+	{GPIOA, LL_GPIO_PIN_4},
+	{GPIOA, LL_GPIO_PIN_7},
+	{GPIOB, LL_GPIO_PIN_2},
+	{GPIOB, LL_GPIO_PIN_11},
 
-		{GPIOA, LL_GPIO_PIN_2},
-		{GPIOA, LL_GPIO_PIN_5},
-		{GPIOB, LL_GPIO_PIN_0},
-		{GPIOB, LL_GPIO_PIN_1},
-		{GPIOB, LL_GPIO_PIN_10},
+	{GPIOA, LL_GPIO_PIN_2},
+	{GPIOA, LL_GPIO_PIN_5},
+	{GPIOB, LL_GPIO_PIN_0},
+	{GPIOB, LL_GPIO_PIN_1},
+	{GPIOB, LL_GPIO_PIN_10},
 };
+
+Sensor_t Sensors[NUM_PIXELS] = {0};
 
 void Select_Sensor(uint8_t num) {
 	LL_GPIO_InitTypeDef GPIO_InitStruct = {
@@ -52,8 +52,8 @@ void Select_Sensor(uint8_t num) {
 		} else {
 			GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
 		}
-		GPIO_InitStruct.Pin = S[i].pin;
-		LL_GPIO_Init(S[i].port, &GPIO_InitStruct);
+		GPIO_InitStruct.Pin = Sensor_Pins[i].pin;
+		LL_GPIO_Init(Sensor_Pins[i].port, &GPIO_InitStruct);
 	}
 }
 
@@ -69,16 +69,20 @@ uint16_t distances[NUM_PIXELS];
 
 void Sensors_Event_loop() {
 	static uint8_t i = 0;
+	static uint16_t result = 0;
+	static bool success = false;
+
 	Select_Sensor(i);
-	uint16_t result;
-	if (vcnl36821s_read(VCNL36821S_PS_DATA, &result)) {
-		distances[i] = result;
+	success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 
-		if (result < 10) result = 0;
-		result *= 10;
-		if (result > 255) result = 255;
+	if (success) {
+		uint16_t diff = 0;
+		if (result > Sensors[i].Offset) {
+			diff = result - Sensors[i].Offset;
+		}
 
-		ARGB_SetRGB(i, 0, result, 0);
+		Sensors[i].Value = diff;
 	}
+
 	if (++i >= NUM_PIXELS) i = 0;
 }

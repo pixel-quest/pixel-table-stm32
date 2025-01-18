@@ -8,14 +8,11 @@ typedef struct {
 	uint8_t Click_Dupl_Per;
 	uint8_t Click_Off_Dupl_Msgs;
 
-	// Frame
-	int32_t Frame_Coeff;
-	uint8_t Frame_Click_Threshold; // kg
-	uint8_t Frame_Click_Hysteresis; // kg
-
-	// Defect
-	bool Frame_Defect_A;
-	bool Touch_Defect_B;
+	// Sensors
+	uint8_t Sensor_Click_Threshold;
+	uint8_t Sensor_Click_Hysteresis;
+	uint8_t Sensor_Coeff[NUM_PIXELS];
+	bool Sensor_Defect[NUM_PIXELS];
 } Config_t;
 
 typedef struct {
