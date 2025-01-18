@@ -5,6 +5,7 @@
 #include "../events/events.h"
 #include "../config/config.h"
 #include "../can/can.h"
+#include "../rgb/argb.h"
 
 const IOPin_t Sensor_Pins[NUM_PIXELS] = {
 	{GPIOC, LL_GPIO_PIN_13},
@@ -82,6 +83,12 @@ void Sensors_Event_loop() {
 		}
 
 		Sensors[i].Value = diff;
+
+		if (diff < 10) diff = 0;
+		diff *= 10;
+		if (diff > 255) diff = 255;
+
+		ARGB_SetRGB(i, 0, diff, 0);
 	}
 
 	if (++i >= NUM_PIXELS) i = 0;

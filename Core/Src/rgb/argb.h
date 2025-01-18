@@ -15,7 +15,20 @@
 #ifndef ARGB_H_
 #define ARGB_H_
 
-#include "libs.h"
+#include "main.h"    ///< Main project file
+#include <stdlib.h>  ///< Standard library
+#include <stdint.h>  ///< Std types
+#include <stdbool.h> ///< _Bool to bool
+#include <string.h>  ///< Lib for memcpy, strlen, etc
+#include <stdio.h>   ///< Lib for sprintf, printf, etc
+
+typedef uint8_t u8_t; 	///< 8-bit unsigned
+typedef int8_t i8_t;	///< 8-bit signed
+typedef uint16_t u16_t; ///< 16-bit unsigned
+typedef int16_t i16_t;	///< 16-bit signed
+typedef uint32_t u32_t; ///< 32-bit unsigned
+typedef int32_t i32_t;	///< 32-bit signed
+typedef float fl_t;	///< float type
 
 /**
  * @addtogroup ARGB_Driver
@@ -26,10 +39,11 @@
  * @{
  */
 
-#define WS2811F       ///< Family: {WS2811S, WS2811F, WS2812, SK6812}
+#define WS2812B       ///< Family: {WS2811S, WS2811F, WS2812, SK6812, WS2812B}
 // WS2811S — RGB, 400kHz;
 // WS2811F — RGB, 800kHz;
 // WS2812  — GRB, 800kHz;
+// WS2812B — RGB, 800kHz;
 // SK6812  — RGBW, 800kHz
 
 #define USE_GAMMA_CORRECTION 1 ///< Gamma-correction should fix red&green, try for yourself

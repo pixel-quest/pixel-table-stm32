@@ -44,6 +44,15 @@
  *
  */
 
+/* WS2812B Timings
+ * Period: 1.25us <-> 800 KHz
+ * T0H: 0.3us - 25%
+ * T1H: 0.6us  - 50%
+ * T0L: 0.95us
+ * T1H: 0.6us
+ *
+ */
+
 #include "ARGB.h"  // include header file
 #include "math.h"
 
@@ -148,12 +157,16 @@ void ARGB_Init(void) {
     TIM_HANDLE.Instance->ARR = (uint16_t) (APBfq - 1);   // set timer prescaler
     TIM_HANDLE.Instance->EGR = 1;                        // update timer registers
 #if defined(WS2811F) || defined(WS2811S)
-    PWM_HI = (u8_t) (APBfq * 0.67) - 1;     // Log.1 - 67% - 0.55us/1.2us
-    PWM_LO = (u8_t) (APBfq * 0.25) - 1;     // Log.0 - 25% - 0.20us/0.35us
+    PWM_HI = (u8_t) (APBfq * 0.48) - 1;     // Log.1 - 48% - 0.60us/1.2us
+    PWM_LO = (u8_t) (APBfq * 0.20) - 1;     // Log.0 - 20% - 0.25us/0.5us
 #endif
 #ifdef WS2812
     PWM_HI = (u8_t) (APBfq * 0.56) - 1;     // Log.1 - 56% - 0.70us
     PWM_LO = (u8_t) (APBfq * 0.28) - 1;     // Log.0 - 28% - 0.35us
+#endif
+#if defined(WS2812B)
+    PWM_HI = (u8_t) (APBfq * 0.50) - 1;     // Log.1 - 50% - 0.6us
+    PWM_LO = (u8_t) (APBfq * 0.25) - 1;     // Log.0 - 25% - 0.3us
 #endif
 #ifdef SK6812
     PWM_HI = (u8_t) (APBfq * 0.48) - 1;     // Log.1 - 48% - 0.60us
@@ -542,6 +555,7 @@ static void ARGB_TIM_DMADelayPulseHalfCplt(DMA_HandleTypeDef *hdma) {
             PWM_BUF[i] = (((RGB_BUF[3 * BUF_COUNTER] << i) & 0x80) > 0) ? PWM_HI : PWM_LO;
             PWM_BUF[i + 8] = (((RGB_BUF[3 * BUF_COUNTER + 1] << i) & 0x80) > 0) ? PWM_HI : PWM_LO;
             PWM_BUF[i + 16] = (((RGB_BUF[3 * BUF_COUNTER + 2] << i) & 0x80) > 0) ? PWM_HI : PWM_LO;
+            PWM_BUF[i + 24] = (((RGB_BUF[3 * BUF_COUNTER + 3] << i) & 0x80) > 0) ? PWM_HI : PWM_LO;
 #endif
         }
         BUF_COUNTER++;
@@ -556,7 +570,7 @@ static void ARGB_TIM_DMADelayPulseHalfCplt(DMA_HandleTypeDef *hdma) {
 /** @} */ // Driver
 
 // Check strip type
-#if !(defined(SK6812) || defined(WS2811F) || defined(WS2811S) || defined(WS2812))
+#if !(defined(SK6812) || defined(WS2811F) || defined(WS2811S) || defined(WS2812) || defined(WS2812B))
 #error INCORRECT LED TYPE
 #warning Set it from list in ARGB.h string 29
 #endif

@@ -52,7 +52,7 @@ void Idle_Rainbow_If_Needed() {
 	}
 }
 
-void Reset_Leds() {
+void Init_Leds() {
 	ARGB_Init();
 	ARGB_Clear();
 	Reset_Idle_Mode();
