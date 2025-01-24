@@ -5,9 +5,9 @@
 #include "../events/events.h"
 #include "../can/can.h"
 
-uint8_t FormatSetColorByteCommand(uint8_t* pData, uint8_t pixelNum, uint8_t* pColors) {
+uint8_t FormatSetColorRGB8Command(uint8_t* pData, uint8_t pixelNum, uint8_t* pColors) {
 	uint8_t len = 0;
-	pData[len++] = COMMAND_REQ_SET_COLOR_BYTE;
+	pData[len++] = COMMAND_REQ_SET_COLOR_RGB8;
 	pData[len++] = pixelNum;
 	for (uint8_t i = 0; i < 8; i++) {
 		pData[len++] = *pColors++;
@@ -18,7 +18,7 @@ uint8_t FormatSetColorByteCommand(uint8_t* pData, uint8_t pixelNum, uint8_t* pCo
 
 uint8_t FormatSetColorRGBCommand(uint8_t* pData, uint8_t pixelNum, uint8_t R, uint8_t G, uint8_t B) {
 	uint8_t len = 0;
-	pData[len++] = COMMAND_REQ_SET_COLOR_RGB;
+	pData[len++] = COMMAND_REQ_SET_COLOR_RGB24;
 	pData[len++] = pixelNum;
 	pData[len++] = R;
 	pData[len++] = G;

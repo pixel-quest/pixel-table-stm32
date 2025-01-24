@@ -94,11 +94,11 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 		pixelNum = msgData[1];
 	} else if (msgHeader.StdId >= CAN_COLOR_IDS_OFFSET) {
 		// Тут важно будет помнить, что для семицвета обязательно 8 байт данных, даже если пикселей в линейке меньше
-		if (msgHeader.DLC < 8 && msgData[0] == COMMAND_REQ_SET_COLOR_RGB) {
+		if (msgHeader.DLC < 8 && msgData[0] == COMMAND_REQ_SET_COLOR_RGB24) {
 			command = msgData[0];
 			pixelNum = msgData[1];
 		} else {
-			command = COMMAND_REQ_SET_COLOR_BYTE;
+			command = COMMAND_REQ_SET_COLOR_RGB8;
 			pixelNum = (uint8_t)(msgHeader.StdId - CAN_COLOR_IDS_OFFSET - GlobalConfig.config.CAN_Address * 8);
 		}
 		if (pixelNum > 7) return;
@@ -112,7 +112,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 		case COMMAND_REQ_PING:
 			__NOP();
 			break;
-		case COMMAND_REQ_SET_COLOR_RGB:
+		case COMMAND_REQ_SET_COLOR_RGB24:
 			if (pixelNum == 0) { // it't for me
 				if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
 					// Set_Pixel_Color_RGB(msgData[2], msgData[3], msgData[4]);

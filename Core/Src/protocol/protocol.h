@@ -32,8 +32,8 @@
 
 // Commands Requests
 #define COMMAND_REQ_PING                20 // 0x14 пинг для активации мастера, без ответа
-#define COMMAND_REQ_SET_COLOR_BYTE 		21 // 0x15 установка цвета семицвета, без ответа
-#define COMMAND_REQ_SET_COLOR_RGB		22 // 0x16 установка цвета RGB, без ответа
+#define COMMAND_REQ_SET_COLOR_RGB8 		21 // 0x15 установка цвета семицвета, без ответа
+#define COMMAND_REQ_SET_COLOR_RGB24		22 // 0x16 установка цвета RGB, без ответа
 #define COMMAND_REQ_RESTART 		    23 // 0x17 перезагрузка, без ответа
 
 #define COMMAND_REQ_GET_CLICK			24 // 0x18 запрос клика, ответ COMMAND_CLICK_ON || COMMAND_CLICK_OFF
@@ -51,7 +51,7 @@
 #define COMMAND_RES_REGISTER			34 // 0x22 ответ регистра
 
 // Helpers
-uint8_t FormatSetColorByteCommand(uint8_t* pData, uint8_t pixelNum, uint8_t* pColors);
+uint8_t FormatSetColorRGB8Command(uint8_t* pData, uint8_t pixelNum, uint8_t* pColors);
 uint8_t FormatSetColorRGBCommand(uint8_t* pData, uint8_t pixelNum, uint8_t R, uint8_t G, uint8_t B);
 uint8_t FormatGetClickCommand(uint8_t* pData, uint8_t pixelNum);
 uint8_t FormatCalibrateZeroCommand(uint8_t* pData, uint8_t pixelNum);
