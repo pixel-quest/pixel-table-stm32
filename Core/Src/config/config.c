@@ -20,8 +20,7 @@ void Read_Global_Config() {
 	if (GlobalConfig.config.Special_Chars != SPECIAL_CHARS ||
 			GlobalConfig.config.Click_Dupl_Per == 0 ||
 			GlobalConfig.config.Click_Off_Dupl_Msgs == 0 ||
-			GlobalConfig.config.Sensor_Click_Threshold == 0 ||
-			GlobalConfig.config.Sensor_Coeff == 0)
+			GlobalConfig.config.Sensor_Click_Threshold == 0)
 		atLeastOneSuccess = false;
 
 	if (!atLeastOneSuccess)
@@ -57,10 +56,10 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 
 	// General
 	configNVRAM->config.Special_Chars = SPECIAL_CHARS;
-	configNVRAM->config.CAN_Address = DEFAULT_DEVICE_CAN_ADDRESS;
 	configNVRAM->config.Click_Off_Dupl_Msgs = DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES;
 
 	// Sensors
+	configNVRAM->config.RC_Filter_K = DEFAULT_RC_FILTER_K;
 	configNVRAM->config.Sensor_Click_Threshold = DEFAULT_CLICK_THRESHOLD;
 	configNVRAM->config.Sensor_Click_Hysteresis = DEFAULT_CLICK_HYSTERESIS;
 

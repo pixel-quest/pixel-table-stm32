@@ -1,10 +1,11 @@
 #include "main.h"
 #include "can.h"
-#include "../protocol/protocol.h"
 #include "../config/config.h"
 #include "../events/events.h"
 #include "../rgb/leds.h"
+#include "../sensors/sensors.h"
 
+uint8_t CAN_Address = 0;
 const IOPin_t SW1 = {GPIOA, LL_GPIO_PIN_14};
 const IOPin_t SW2 = {GPIOA, LL_GPIO_PIN_10};
 const IOPin_t SW3 = {GPIOA, LL_GPIO_PIN_9};
@@ -39,11 +40,12 @@ void CAN_Filter_and_Start(uint16_t device_address) {
 	canFilterConfig.FilterMaskIdLow = 0x07F0<<5;    												// Mask #2
 	// Принимаем 16 адресов, это значит:
 	// - адресное пространство 512 адресов делится на 16 по 32
-	// - значит может быть максимум 32 сегмента (а на плате пока всего 4 адресозадающих переключателя)
+	// - значит может быть максимум 32 сегмента (а на плате пока всего 4 адресозадающих переключателя, т.е не больше 16)
 	// - в 16 адресов мы можем уложить:
-	//		- либо 128 семицветов (по 8 в каждом адресе)
-	//		- либо 32 RGB (по 2 в каждом адресе)
-	//		- чего достаточно, чтобы покрыть сегмент 5х5
+	//		- либо 128 RGB8 (по 8 в каждом адресе)
+	//		- либо 64 RGB12 (по 4 в каждом адресе)
+	//		- либо 32 RGB24 (по 2 в каждом адресе)
+	//		- чего всегда достаточно, чтобы покрыть сегмент 5х5, вопрос лишь в скорости
 
 	if (HAL_CAN_ConfigFilter(&hcan, &canFilterConfig) != HAL_OK) { Error_Handler(); }
 
@@ -57,13 +59,12 @@ void CAN_ReConfig_Target_Filter(uint16_t device_address) {
 }
 
 void CAN_Config() {
-	GlobalConfig.config.CAN_Address =
-			LL_GPIO_IsInputPinSet(SW1.port, SW1.pin) |
-			LL_GPIO_IsInputPinSet(SW2.port, SW2.pin) << 1 |
-			LL_GPIO_IsInputPinSet(SW3.port, SW3.pin) << 2 |
-			LL_GPIO_IsInputPinSet(SW4.port, SW4.pin) << 3;
+	CAN_Address = 	LL_GPIO_IsInputPinSet(SW1.port, SW1.pin) |
+					LL_GPIO_IsInputPinSet(SW2.port, SW2.pin) << 1 |
+					LL_GPIO_IsInputPinSet(SW3.port, SW3.pin) << 2 |
+					LL_GPIO_IsInputPinSet(SW4.port, SW4.pin) << 3;
 
-	CAN_Filter_and_Start(GlobalConfig.config.CAN_Address);
+	CAN_Filter_and_Start(CAN_Address);
 
 	if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_RX_FIFO0_MSG_PENDING) != HAL_OK) { Error_Handler(); }
 	if (HAL_CAN_ActivateNotification(&hcan, CAN_IT_ERROR) != HAL_OK) { Error_Handler(); }
@@ -71,6 +72,89 @@ void CAN_Config() {
 
 void HAL_CAN_ErrorCallback(CAN_HandleTypeDef *hcan) {
 	Error_Handler();
+}
+
+uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
+	uint8_t len = 0;
+	pData[len++] = COMMAND_RES_REGISTER;
+	pData[len++] = pixelNum;
+	pData[len++] = regNum;
+
+	int32_t value;
+	switch (regNum) {
+	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
+		value = (int32_t)GlobalConfig.config.Click_Off_Dupl_Msgs;
+	    break;
+	case 6: // REGISTER_CLICK_ON_DUPL_PER
+		value = (int32_t)GlobalConfig.config.Click_Dupl_Per;
+	    break;
+	case 17: // REGISTER_FRAME_COEFF
+		value = (int32_t)GlobalConfig.config.Sensor_Coeff[pixelNum];
+		break;
+	case 18: // REGISTER_RC_FILTER_K
+		value = (int32_t)GlobalConfig.config.RC_Filter_K;
+		break;
+	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Threshold;
+	    break;
+	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Hysteresis;
+	    break;
+	}
+
+	uint8_t* pValue = (uint8_t *)&value;
+
+	// reversed memcpy
+	uint8_t startPos = len + 3;
+	for (uint8_t i = 0; i < 4; i++) {
+		pData[startPos-i] = *pValue++;
+		len++;
+	}
+
+	return len;
+}
+
+uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value) {
+	switch (regNum) {
+	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
+		GlobalConfig.config.Click_Off_Dupl_Msgs = (uint8_t)value;
+		break;
+	case 6: // REGISTER_CLICK_ON_DUPL_PER
+		GlobalConfig.config.Click_Dupl_Per = (uint8_t)value;
+		break;
+	case 17: // REGISTER_FRAME_COEFF
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Coeff[pixelNum] = (uint16_t)value;
+		break;
+	case 18: // REGISTER_RC_FILTER_K
+		if (value < 10 || value > 50) break;
+		GlobalConfig.config.RC_Filter_K = (uint8_t)value;
+		break;
+	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Click_Threshold = (uint16_t)value;
+		break;
+	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Click_Hysteresis = (uint16_t)value;
+		break;
+	}
+
+	Save_Global_Config();
+	//Set_Green_msec(250);
+
+	return FormatRespRegCommand(pData, pixelNum, regNum);
+}
+
+void Defect(uint8_t p, uint8_t defect) {
+	if (defect >> 7 == 0) { // quiet
+		Set_Pixel_Yellow_msec(p, 250);
+	}
+
+	GlobalConfig.config.Sensor_Defect[p] = (defect >> 1) & 1;
+	Save_Global_Config();
+
+	Reset_Sensor_Value(p);
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
@@ -89,18 +173,19 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	uint8_t pixelNum;
 
 	if (msgHeader.StdId == CAN_BROADCAST_ADDRESS ||
-			msgHeader.StdId == CAN_TARGET_IDS_OFFSET + GlobalConfig.config.CAN_Address) {
+			msgHeader.StdId == CAN_TARGET_IDS_OFFSET + CAN_Address) {
 		command = msgData[0];
 		pixelNum = msgData[1];
 	} else if (msgHeader.StdId >= CAN_COLOR_IDS_OFFSET) {
-		// Тут важно будет помнить, что для семицвета обязательно 8 байт данных, даже если пикселей в линейке меньше
-		if (msgHeader.DLC < 8 && msgData[0] == COMMAND_REQ_SET_COLOR_RGB24) {
-			command = msgData[0];
-			pixelNum = msgData[1];
+		// Тут важно будет помнить, что для семицвета обязательно 8 байт данных, даже если пикселей в меньше
+		if (msgHeader.DLC < 8) {
+			command = msgData[0]; // COMMAND_REQ_SET_COLOR_RGB12 or COMMAND_REQ_SET_COLOR_RGB24
 		} else {
 			command = COMMAND_REQ_SET_COLOR_RGB8;
-			pixelNum = (uint8_t)(msgHeader.StdId - CAN_COLOR_IDS_OFFSET - GlobalConfig.config.CAN_Address * 8);
 		}
+
+		pixelNum = (uint8_t)(msgHeader.StdId - CAN_COLOR_IDS_OFFSET - CAN_Address * 8);
+
 		if (pixelNum > 7) return;
 	} else {
 		return; // ignore any other cases
@@ -109,39 +194,78 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	Reset_Idle_Mode();
 
 	switch (command) {
-		case COMMAND_REQ_PING:
-			__NOP();
+		case COMMAND_REQ_SET_COLOR_RGB8:
+			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
+				for (uint8_t i=0; i<8; i++) { // 8 pixels starts from pixelNum
+					Set_Pixel_Color_RGB8(pixelNum+i, msgData[i]);
+				}
+			}
+			break;
+		case COMMAND_REQ_SET_COLOR_RGB12:
+			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
+				uint8_t R = 0, G = 0, B = 0;
+				for (uint8_t i=0; i<4; i++) { // 4 pixels starts from pixelNum
+					switch (i) {
+					case 0:
+						R = msgData[1] >> 4;
+						G = msgData[1] & 0xF;
+						B = msgData[2] >> 4;
+						break;
+					case 1:
+						R = msgData[2] & 0xF;
+						G = msgData[3] >> 4;
+						B = msgData[3] & 0xF;
+						break;
+					case 2:
+						R = msgData[4] >> 4;
+						G = msgData[4] & 0xF;
+						B = msgData[5] >> 4;
+						break;
+					case 3:
+						R = msgData[5] & 0xF;
+						G = msgData[6] >> 4;
+						B = msgData[6] & 0xF;
+						break;
+					}
+					Set_Pixel_Color_RGB12(pixelNum+i, R, G, B);
+				}
+			}
 			break;
 		case COMMAND_REQ_SET_COLOR_RGB24:
-			if (pixelNum == 0) { // it't for me
-				if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
-					// Set_Pixel_Color_RGB(msgData[2], msgData[3], msgData[4]);
+			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
+				for (uint8_t i=0; i<2; i++) { // 2 pixels starts from pixelNum
+					Set_Pixel_Color_RGB24(pixelNum+i, msgData[1+i], msgData[2+i], msgData[3+i]);
 				}
+			}
+			break;
+		case COMMAND_REQ_CALIBRATE_ZERO:
+			for (uint8_t p=0; p<NUM_PIXELS; p++) {
+				Set_Pixel_Event(p, EVNT_CALIBRATE_ZERO, 100*p);
+			}
+			break;
+		case COMMAND_REQ_CALIBRATE_SENS:
+			for (uint8_t p=0; p<NUM_PIXELS; p++) {
+				Set_Pixel_Event(p, EVNT_CALIBRATE_SENS, 100*p);
 			}
 			break;
 		case COMMAND_REQ_DEFECT:
 			if (msgHeader.StdId == CAN_BROADCAST_ADDRESS) break;
-			if (pixelNum == 0) { // it't for me
-				Defect(msgData[2]);
-			}
+			Defect(pixelNum, msgData[2]);
 			break;
 		case COMMAND_REQ_READ_REG:
-			if (msgHeader.StdId == CAN_BROADCAST_ADDRESS || GlobalConfig.config.CAN_Address == 0) break;
+			if (msgHeader.StdId == CAN_BROADCAST_ADDRESS || CAN_Address == 0) break;
 			// - глобальная команда чтения пока не поддерживается
 			// - нулевых устройств мб несколько, нельзя отвечать
 
-			if (pixelNum == 0) { // it't for me
-				uint8_t answerData[8];
-				uint8_t TransmitDataSize = FormatRespRegCommand(
-					answerData,
-					pixelNum,
-					msgData[2]
-				);
-				CAN_Send(answerData, TransmitDataSize);
-			}
+			uint8_t answerData[8];
+			uint8_t TransmitDataSize = FormatRespRegCommand(
+				answerData,
+				pixelNum,
+				msgData[2]
+			);
+			CAN_Send(answerData, TransmitDataSize-2); // cut off 2 bytes CRC for CAN
 			break;
-		case COMMAND_REQ_WRITE_REG:
-			if (pixelNum == 0) { // it't for me
+		case COMMAND_REQ_WRITE_REG: {
 				uint8_t answerData[8];
 				uint8_t TransmitDataSize = WriteReg(
 					answerData,
@@ -149,27 +273,25 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 					msgData[2],
 					(int32_t)msgData[3] << 24 | (int32_t)msgData[4] << 16 | (int32_t)msgData[5] << 8 | (int32_t)msgData[6]
 				);
-				if (GlobalConfig.config.CAN_Address == 0) break; // нулевых устройств мб несколько, нельзя отвечать
-				CAN_Send(answerData, TransmitDataSize);
+				if (CAN_Address == 0) break; // нулевых устройств мб несколько, нельзя отвечать
+				CAN_Send(answerData, TransmitDataSize-2); // cut off 2 bytes CRC for CAN
 			}
 			break;
 		case COMMAND_REQ_RESTART:
-			if (pixelNum == 0) { // it't for me
-				HAL_NVIC_SystemReset();
-			}
+			HAL_NVIC_SystemReset();
 			break;
 	}
 }
 
 void CAN_Send(uint8_t msgData[], uint8_t len) {
-	if (GlobalConfig.config.CAN_Address == 0 &&
+	if (CAN_Address == 0 &&
 			msgData[0] != COMMAND_RES_CLICK_ON &&
 			msgData[0] != COMMAND_RES_CLICK_OFF) {
 		return;
 	}
 
 	CAN_TxHeaderTypeDef msgHeader;
-	msgHeader.StdId = GlobalConfig.config.CAN_Address + CAN_DEVICE_OUT_IDS_OFFSET;
+	msgHeader.StdId = CAN_Address + CAN_DEVICE_OUT_IDS_OFFSET;
 	msgHeader.DLC = len;
 	msgHeader.TransmitGlobalTime = DISABLE;
 	msgHeader.RTR = CAN_RTR_DATA;

@@ -5,7 +5,10 @@
 #define EVENT_IDLE_MODE_STEP		30 // ms
 #define DEFAULT_BRIGHT				100
 
-void Set_Pixel_Color(uint8_t p, uint8_t R, uint8_t G, uint8_t B);
+void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color);
+void Set_Pixel_Color_RGB12(uint8_t p, uint8_t R, uint8_t G, uint8_t B);
+void Set_Pixel_Color_RGB24(uint8_t p, uint8_t R, uint8_t G, uint8_t B);
+
 void Set_Pixel_Green_msec(uint8_t p, uint32_t msec);
 void Set_Pixel_Red_msec(uint8_t p, uint32_t msec);
 void Set_Pixel_Yellow_msec(uint8_t p, uint32_t msec);

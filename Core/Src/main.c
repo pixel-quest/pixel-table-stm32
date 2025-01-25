@@ -25,7 +25,6 @@
 #include "can/can.h"
 #include "events/events.h"
 #include "sensors/sensors.h"
-#include "protocol/protocol.h"
 #include "rgb/leds.h"
 /* USER CODE END Includes */
 

@@ -27,6 +27,7 @@ bool Test_Common_Event(uint8_t event_id);
 enum {
 	EVNT_RESET_PIXEL_COLOR,
 	EVNT_CALIBRATE_ZERO,
+	EVNT_CALIBRATE_SENS,
 	CNT_PIXEL_EVENTS  //count of registered pixel events
 };
 

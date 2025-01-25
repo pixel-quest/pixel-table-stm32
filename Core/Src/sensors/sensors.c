@@ -1,7 +1,6 @@
 #include "main.h"
 #include "sensors.h"
 #include "vcnl36821s.h"
-#include "../protocol/protocol.h"
 #include "../events/events.h"
 #include "../config/config.h"
 #include "../can/can.h"
@@ -41,14 +40,14 @@ const IOPin_t Sensor_Pins[NUM_PIXELS] = {
 
 Sensor_t Sensors[NUM_PIXELS] = {0};
 
-void Select_Sensor(uint8_t num) {
+void Select_Sensor(uint8_t p) {
 	LL_GPIO_InitTypeDef GPIO_InitStruct = {
 		Speed: LL_GPIO_SPEED_FREQ_LOW,
 		OutputType: LL_GPIO_OUTPUT_PUSHPULL,
 	};
 
 	for (uint8_t i=0; i<NUM_PIXELS; i++) {
-		if (i == num) {
+		if (i == p) {
 			GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
 		} else {
 			GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
@@ -58,9 +57,17 @@ void Select_Sensor(uint8_t num) {
 	}
 }
 
+void Reset_Sensor_Value(uint8_t p) {
+	Sensors[p].Click = false;
+	Sensors[p].Value = 0;
+	Sensors[p].Dacc = 0;
+	Sensors[p].Dout = 0;
+}
+
 void Sensors_Config() {
 	for (uint8_t p=0; p<NUM_PIXELS; p++) {
 		HAL_Delay(5);
+		Reset_Sensor_Value(p);
 		Select_Sensor(p);
 		vcnl36821s_init();
 	}
@@ -91,17 +98,46 @@ void Sensors_Event_loop() {
 		if (!success) Set_Pixel_Red_msec(p, 200);
 	}
 
+	// ========= CALIBRATE_SENS
+	if (Test_Pixel_Event_Done(p, EVNT_CALIBRATE_SENS)) {
+		for (uint8_t attempts=0; attempts<10; attempts++) {
+			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
+			if (success) {
+				uint16_t diff = 0;
+				if (result > Sensors[p].Offset) {
+					diff = result - Sensors[p].Offset;
+				}
+
+				if (diff < MIN_SENSOR_SENS) {
+					success = false;
+				} else {
+					GlobalConfig.config.Sensor_Coeff[p] = SENSOR_SCALE / diff;
+					Save_Global_Config();
+
+					Set_Pixel_Green_msec(p, 200);
+				}
+				break;
+			}
+		}
+		if (!success) Set_Pixel_Red_msec(p, 200);
+	}
+
 	success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 	if (success) {
 		Sensors[p].Value = 0;
 		if (result > Sensors[p].Offset) {
-			Sensors[p].Value = result - Sensors[p].Offset;
+			Sensors[p].Value = (result - Sensors[p].Offset) * GlobalConfig.config.Sensor_Coeff[p];
+			if (Sensors[p].Value > SENSOR_SCALE) Sensors[p].Value = SENSOR_SCALE;
 		}
 
-		if (Sensors[p].Value > 10) {
-			Sensors[p].Click = true;
-		} else {
-			Sensors[p].Click = false;
+		// RC filter
+		Sensors[p].Dacc = Sensors[p].Dacc + Sensors[p].Value - Sensors[p].Dout;
+		Sensors[p].Dout = Sensors[p].Dacc / GlobalConfig.config.RC_Filter_K * 10;
+
+		if (Sensors[p].Click && Sensors[p].Dout < (GlobalConfig.config.Sensor_Click_Threshold - GlobalConfig.config.Sensor_Click_Hysteresis)) {
+		   Sensors[p].Click = false;
+		} else if (!Sensors[p].Click && Sensors[p].Dout > (GlobalConfig.config.Sensor_Click_Threshold + GlobalConfig.config.Sensor_Click_Hysteresis)) {
+		   Sensors[p].Click = true;
 		}
 	}
 

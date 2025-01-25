@@ -15,23 +15,43 @@ int getBrightCRT(uint8_t val) {
   return ((int)val * val + 255) >> 8;
 }
 
-// Set individual pixel color
-void Set_Pixel_Color(uint8_t p, uint8_t R, uint8_t G, uint8_t B) {
+// RRR GGG BB - 8 bit color
+void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color) {
+	uint8_t R = (color >> 5) & 0x7;
+	uint8_t G = (color >> 2) & 0x7;
+	uint8_t B = (color >> 0) & 0x3;
+
+	ARGB_SetRGB(
+		p,
+		(R == 0) ? 0 : getBrightCRT(R * 36 + 3), // 7 -> 255
+		(G == 0) ? 0 : getBrightCRT(G * 36 + 3), // 7 -> 255
+		getBrightCRT(B * 85) // 3 -> 255
+	);
+}
+
+// RRRR GGGG BBBB - 12 bit color
+void Set_Pixel_Color_RGB12(uint8_t p, uint8_t R, uint8_t G, uint8_t B) {
+	ARGB_SetRGB(p, getBrightCRT(R*17), getBrightCRT(G*17), getBrightCRT(B*17));
+}
+
+// R-byte G-byte B-byte - 24 bit color
+void Set_Pixel_Color_RGB24(uint8_t p, uint8_t R, uint8_t G, uint8_t B) {
 	ARGB_SetRGB(p, getBrightCRT(R), getBrightCRT(G), getBrightCRT(B));
 }
 
+// Timouted colors
 void Set_Pixel_Green_msec(uint8_t p, uint32_t msec) {
-	Set_Pixel_Color(p, 0, DEFAULT_BRIGHT, 0);
+	Set_Pixel_Color_RGB24(p, 0, DEFAULT_BRIGHT, 0);
 	Set_Pixel_Event(p, EVNT_RESET_PIXEL_COLOR, msec);
 }
 
 void Set_Pixel_Red_msec(uint8_t p, uint32_t msec) {
-	Set_Pixel_Color(p, 0, DEFAULT_BRIGHT, 0);
+	Set_Pixel_Color_RGB24(p, 0, DEFAULT_BRIGHT, 0);
 	Set_Pixel_Event(p, EVNT_RESET_PIXEL_COLOR, msec);
 }
 
 void Set_Pixel_Yellow_msec(uint8_t p, uint32_t msec) {
-	Set_Pixel_Color(p, 0, DEFAULT_BRIGHT, 0);
+	Set_Pixel_Color_RGB24(p, 0, DEFAULT_BRIGHT, 0);
 	Set_Pixel_Event(p, EVNT_RESET_PIXEL_COLOR, msec);
 }
 
@@ -106,7 +126,7 @@ void Led_Event_loop() {
 	}
 	for (uint8_t p=0; p<NUM_PIXELS; p++) {
 		if (Test_Pixel_Event_Done(p, EVNT_RESET_PIXEL_COLOR)) {
-			Set_Pixel_Color(p, 0, 0, 0);
+			Set_Pixel_Color_RGB24(p, 0, 0, 0);
 		}
 	}
 	if (ARGB_Ready() == ARGB_READY) {
