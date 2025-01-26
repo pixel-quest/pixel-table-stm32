@@ -39,5 +39,6 @@
 
 void CAN_Config();
 void CAN_Send(uint8_t msgData[], uint8_t len);
+void CAN_Send_Click(uint8_t pixelNum, bool click, uint8_t status, uint16_t value);
 
 #endif /* __CAN_H */

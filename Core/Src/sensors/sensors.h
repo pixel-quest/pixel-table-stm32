@@ -6,6 +6,9 @@ typedef struct {
 	uint16_t Dacc; // RC filter
 	uint16_t Dout; // RC filter
 	uint16_t Offset;
+	uint16_t ClickCnt;
+	uint8_t StatusCnt;
+	uint8_t Status;
 	bool Click;
 } Sensor_t;
 

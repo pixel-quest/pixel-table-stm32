@@ -56,6 +56,7 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 
 	// General
 	configNVRAM->config.Special_Chars = SPECIAL_CHARS;
+	configNVRAM->config.Click_Dupl_Per = DEFAULT_CLICK_DUPLICATE_PER;
 	configNVRAM->config.Click_Off_Dupl_Msgs = DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES;
 
 	// Sensors

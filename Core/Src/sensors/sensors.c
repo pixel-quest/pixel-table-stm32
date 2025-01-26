@@ -62,6 +62,9 @@ void Reset_Sensor_Value(uint8_t p) {
 	Sensors[p].Value = 0;
 	Sensors[p].Dacc = 0;
 	Sensors[p].Dout = 0;
+	Sensors[p].ClickCnt = 0;
+	Sensors[p].Status = 0;
+	Sensors[p].StatusCnt = 0;
 }
 
 void Sensors_Config() {
@@ -80,6 +83,7 @@ uint16_t distances[NUM_PIXELS];
 
 void Sensors_Event_loop() {
 	static uint8_t p = 0;
+	static uint8_t status = 0;
 	static uint16_t result = 0;
 	static bool success = false;
 
@@ -122,8 +126,14 @@ void Sensors_Event_loop() {
 		if (!success) Set_Pixel_Red_msec(p, 200);
 	}
 
-	success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
+	success = false;
+	if (!GlobalConfig.config.Sensor_Defect[p]) {
+		success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
+	}
+
 	if (success) {
+
+		Sensors[p].StatusCnt = 0;
 		Sensors[p].Value = 0;
 		if (result > Sensors[p].Offset) {
 			Sensors[p].Value = (result - Sensors[p].Offset) * GlobalConfig.config.Sensor_Coeff[p];
@@ -136,9 +146,34 @@ void Sensors_Event_loop() {
 
 		if (Sensors[p].Click && Sensors[p].Dout < (GlobalConfig.config.Sensor_Click_Threshold - GlobalConfig.config.Sensor_Click_Hysteresis)) {
 		   Sensors[p].Click = false;
+		   Sensors[p].ClickCnt = 0;
 		} else if (!Sensors[p].Click && Sensors[p].Dout > (GlobalConfig.config.Sensor_Click_Threshold + GlobalConfig.config.Sensor_Click_Hysteresis)) {
 		   Sensors[p].Click = true;
+		   Sensors[p].ClickCnt = 0;
+		} else if (Sensors[p].ClickCnt < UINT16_MAX) {
+		   Sensors[p].ClickCnt++;
 		}
+
+		if (Sensors[p].ClickCnt % GlobalConfig.config.Click_Dupl_Per == 0 &&
+				(Sensors[p].Click || Sensors[p].ClickCnt < GlobalConfig.config.Click_Off_Dupl_Msgs * GlobalConfig.config.Click_Dupl_Per)) {
+			CAN_Send_Click(p, Sensors[p].Click, 0, Sensors[p].Dout);
+		}
+
+	} else {
+
+		if (Sensors[p].StatusCnt < FAIL_STATUS_THRESHOLD) {
+			Sensors[p].StatusCnt++;
+		}
+
+		status = GlobalConfig.config.Sensor_Defect[p];
+		if (!status && Sensors[p].StatusCnt >= FAIL_STATUS_THRESHOLD) {
+			status |= 1 << 4;
+		}
+
+		if (status != Sensors[p].Status)
+			CAN_Send_Click(p, false, status, 0);
+
+		Sensors[p].Status = status;
 	}
 
 	if (++p >= NUM_PIXELS) p = 0;

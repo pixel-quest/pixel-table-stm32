@@ -82,6 +82,9 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 
 	int32_t value;
 	switch (regNum) {
+	case 1: // REGISTER_RC_FILTER_K
+		value = (int32_t)GlobalConfig.config.RC_Filter_K;
+		break;
 	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
 		value = (int32_t)GlobalConfig.config.Click_Off_Dupl_Msgs;
 	    break;
@@ -90,9 +93,6 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 	    break;
 	case 17: // REGISTER_FRAME_COEFF
 		value = (int32_t)GlobalConfig.config.Sensor_Coeff[pixelNum];
-		break;
-	case 18: // REGISTER_RC_FILTER_K
-		value = (int32_t)GlobalConfig.config.RC_Filter_K;
 		break;
 	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
 		value = (int32_t)GlobalConfig.config.Sensor_Click_Threshold;
@@ -116,6 +116,10 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 
 uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value) {
 	switch (regNum) {
+	case 1: // REGISTER_RC_FILTER_K
+		if (value < 10 || value > 50) break;
+		GlobalConfig.config.RC_Filter_K = (uint8_t)value;
+		break;
 	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
 		GlobalConfig.config.Click_Off_Dupl_Msgs = (uint8_t)value;
 		break;
@@ -125,10 +129,6 @@ uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value
 	case 17: // REGISTER_FRAME_COEFF
 		if (value < 1 || value > 255) break;
 		GlobalConfig.config.Sensor_Coeff[pixelNum] = (uint16_t)value;
-		break;
-	case 18: // REGISTER_RC_FILTER_K
-		if (value < 10 || value > 50) break;
-		GlobalConfig.config.RC_Filter_K = (uint8_t)value;
 		break;
 	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
 		if (value < 1 || value > 255) break;
@@ -151,7 +151,7 @@ void Defect(uint8_t p, uint8_t defect) {
 		Set_Pixel_Yellow_msec(p, 250);
 	}
 
-	GlobalConfig.config.Sensor_Defect[p] = (defect >> 1) & 1;
+	GlobalConfig.config.Sensor_Defect[p] = defect & 1;
 	Save_Global_Config();
 
 	Reset_Sensor_Value(p);
@@ -304,4 +304,18 @@ void CAN_Send(uint8_t msgData[], uint8_t len) {
 			Error_Handler();
 		}
 	}
+}
+
+void CAN_Send_Click(uint8_t pixelNum, bool click, uint8_t status, uint16_t value) {
+	uint8_t msgData[8];
+	uint8_t len = 0;
+	msgData[len++] = click ? COMMAND_RES_CLICK_ON : COMMAND_RES_CLICK_OFF;
+	msgData[len++] = pixelNum;
+	msgData[len++] = status;
+	if (click) {
+		msgData[len++] = (value >> 8) & 0xFF;
+		msgData[len++] = value & 0xFF;
+	}
+
+	CAN_Send(msgData, len);
 }
