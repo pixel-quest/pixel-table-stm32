@@ -7,8 +7,7 @@ typedef struct {
 	uint16_t Dout; // RC filter
 	uint16_t Offset;
 	uint16_t ClickCnt;
-	uint8_t StatusCnt;
-	uint8_t Status;
+	uint8_t DefectCnt;
 	bool Click;
 } Sensor_t;
 

@@ -15,18 +15,26 @@ int getBrightCRT(uint8_t val) {
   return ((int)val * val + 255) >> 8;
 }
 
-// RRR GGG BB - 8 bit color
-void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color) {
-	uint8_t R = (color >> 5) & 0x7;
-	uint8_t G = (color >> 2) & 0x7;
-	uint8_t B = (color >> 0) & 0x3;
+// 7-color bitmasks
+#define SET_COLOR_R_BITMASK    		(0x1U << 0)
+#define SET_COLOR_G_BITMASK  		(0x1U << 1)
+#define SET_COLOR_B_BITMASK  		(0x1U << 2)
+#define SET_COLOR_BRIGHT_Pos		(3U)
+#define SET_BRIGHT_BITMASK			(0x7U)
+// 6..7 RESERVE
 
-	ARGB_SetRGB(
-		p,
-		(R == 0) ? 0 : getBrightCRT(R * 36 + 3), // 7 -> 255
-		(G == 0) ? 0 : getBrightCRT(G * 36 + 3), // 7 -> 255
-		getBrightCRT(B * 85) // 3 -> 255
-	);
+void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color) {
+	uint8_t R = 0, G = 0, B = 0;
+	uint8_t bright = (color >> SET_COLOR_BRIGHT_Pos) & SET_BRIGHT_BITMASK;
+
+	if (bright > 0) {
+		bright = getBrightCRT(bright * 36 + 3); // 7 -> 255
+		if ((color & SET_COLOR_R_BITMASK) != 0) R = bright;
+		if ((color & SET_COLOR_G_BITMASK) != 0) G = bright;
+		if ((color & SET_COLOR_B_BITMASK) != 0) B = bright;
+	}
+
+	ARGB_SetRGB(p, R, G, B);
 }
 
 // RRRR GGGG BBBB - 12 bit color

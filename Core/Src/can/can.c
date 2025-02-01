@@ -234,7 +234,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 		case COMMAND_REQ_SET_COLOR_RGB24:
 			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
 				for (uint8_t i=0; i<2; i++) { // 2 pixels starts from pixelNum
-					Set_Pixel_Color_RGB24(pixelNum+i, msgData[1+i], msgData[2+i], msgData[3+i]);
+					Set_Pixel_Color_RGB24(pixelNum+i, msgData[1+i*3], msgData[2+i*3], msgData[3+i*3]);
 				}
 			}
 			break;

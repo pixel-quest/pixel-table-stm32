@@ -16,7 +16,7 @@
 
 #define DEFAULT_CLICK_DUPLICATE_PER					16
 #define DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES 		2
-#define FAIL_STATUS_THRESHOLD						10
+#define FAIL_STATUS_THRESHOLD						33 // ~ 1 sec autodefect (1.2 msec * 25 sensors = 30 msec period)
 
 #define MIN_SENSOR_SENS								10
 #define SENSOR_SCALE								1000

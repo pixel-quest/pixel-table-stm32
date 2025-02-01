@@ -63,8 +63,7 @@ void Reset_Sensor_Value(uint8_t p) {
 	Sensors[p].Dacc = 0;
 	Sensors[p].Dout = 0;
 	Sensors[p].ClickCnt = 0;
-	Sensors[p].Status = 0;
-	Sensors[p].StatusCnt = 0;
+	Sensors[p].DefectCnt = 0;
 }
 
 void Sensors_Config() {
@@ -83,7 +82,6 @@ uint16_t distances[NUM_PIXELS];
 
 void Sensors_Event_loop() {
 	static uint8_t p = 0;
-	static uint8_t status = 0;
 	static uint16_t result = 0;
 	static bool success = false;
 
@@ -133,7 +131,7 @@ void Sensors_Event_loop() {
 
 	if (success) {
 
-		Sensors[p].StatusCnt = 0;
+		Sensors[p].DefectCnt = 0;
 		Sensors[p].Value = 0;
 		if (result > Sensors[p].Offset) {
 			Sensors[p].Value = (result - Sensors[p].Offset) * GlobalConfig.config.Sensor_Coeff[p];
@@ -161,19 +159,18 @@ void Sensors_Event_loop() {
 
 	} else {
 
-		if (Sensors[p].StatusCnt < FAIL_STATUS_THRESHOLD) {
-			Sensors[p].StatusCnt++;
+		if (Sensors[p].DefectCnt < FAIL_STATUS_THRESHOLD) {
+			Sensors[p].DefectCnt++;
 		}
 
-		status = GlobalConfig.config.Sensor_Defect[p];
-		if (!status && Sensors[p].StatusCnt >= FAIL_STATUS_THRESHOLD) {
-			status |= 1 << 4;
+		// Autodefect
+		if (!GlobalConfig.config.Sensor_Defect[p] &&
+				Sensors[p].DefectCnt >= FAIL_STATUS_THRESHOLD) {
+			GlobalConfig.config.Sensor_Defect[p] = true;
+			Save_Global_Config();
+			CAN_Send_Click(p, false, 1, 0);
 		}
 
-		if (status != Sensors[p].Status)
-			CAN_Send_Click(p, false, status, 0);
-
-		Sensors[p].Status = status;
 	}
 
 	if (++p >= NUM_PIXELS) p = 0;
