@@ -18,7 +18,7 @@
 #define CAN_DEVICE_OUT_IDS_OFFSET		1024
 #define CAN_COLOR_IDS_OFFSET			1536
 
-// Commands Requests
+// Commands
 #define COMMAND_REQ_SET_COLOR_RGB8 		21 // 0x15 установка цвета RGB8, без ответа
 #define COMMAND_REQ_SET_COLOR_RGB12		22 // 0x16 установка цвета RGB12, без ответа
 #define COMMAND_REQ_SET_COLOR_RGB24		23 // 0x17 установка цвета RGB24, без ответа
@@ -31,14 +31,10 @@
 #define COMMAND_REQ_READ_REG 			30 // 0x1E чтение регистра, овтет COMMAND_RES_REGISTER
 #define COMMAND_REQ_WRITE_REG	 		31 // 0x1F запись регистра, ответ COMMAND_RES_REGISTER
 
-// Commands Responses
-#define COMMAND_RES_CLICK_ON 			32 // 0x20 ответ Status + Click data
-#define COMMAND_RES_CLICK_OFF 			33 // 0x21 ответ Status
-
+#define COMMAND_RES_CLICK 				32 // 0x20 Address (5 bit) + Defect (1 bit) + Click (1 bit)
 #define COMMAND_RES_REGISTER			35 // 0x23 ответ регистра
 
 void CAN_Config();
 void CAN_Send(uint8_t msgData[], uint8_t len);
-void CAN_Send_Click(uint8_t pixelNum, bool click, uint8_t status, uint16_t value);
 
 #endif /* __CAN_H */

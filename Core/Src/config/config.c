@@ -5,7 +5,7 @@ union ConfigNVRAM GlobalConfig;
 
 // Дополнительный контроль адекватности конфига
 // помогает проверять также при сохранении
-#define SPECIAL_CHARS (uint16_t)0xABCD
+#define SPECIAL_CHARS (uint16_t)0xABBD
 
 void Read_Global_Config() {
 	bool goodPages[FLASH_CONFIG_PAGES];

@@ -1,7 +1,7 @@
 #ifndef SRC_RGB_LEDS_H_
 #define SRC_RGB_LEDS_H_
 
-#define EVENT_IDLE_MODE_TIMEOUT		5000 // ms
+#define EVENT_IDLE_MODE_TIMEOUT		15000 // ms
 #define EVENT_IDLE_MODE_STEP		30 // ms
 #define DEFAULT_BRIGHT				100
 

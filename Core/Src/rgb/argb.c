@@ -213,8 +213,7 @@ void ARGB_SetBrightness(u8_t br) {
 void ARGB_SetRGB(u16_t i, u8_t r, u8_t g, u8_t b) {
     // overflow protection
     if (i >= NUM_PIXELS) {
-        u16_t _i = i / NUM_PIXELS;
-        i -= _i * NUM_PIXELS;
+        return;
     }
     // set brightness
     r /= 256 / ((u16_t) ARGB_BR + 1);

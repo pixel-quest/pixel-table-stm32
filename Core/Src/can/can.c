@@ -177,16 +177,16 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 		command = msgData[0];
 		pixelNum = msgData[1];
 	} else if (msgHeader.StdId >= CAN_COLOR_IDS_OFFSET) {
-		// Тут важно будет помнить, что для семицвета обязательно 8 байт данных, даже если пикселей в меньше
+		// Тут важно будет помнить, что для RGB8 обязательно 8 байт данных, даже если пикселей в меньше
 		if (msgHeader.DLC < 8) {
 			command = msgData[0]; // COMMAND_REQ_SET_COLOR_RGB12 or COMMAND_REQ_SET_COLOR_RGB24
 		} else {
 			command = COMMAND_REQ_SET_COLOR_RGB8;
 		}
 
-		pixelNum = (uint8_t)(msgHeader.StdId - CAN_COLOR_IDS_OFFSET - CAN_Address * 8);
+		pixelNum = (uint8_t)(msgHeader.StdId - CAN_COLOR_IDS_OFFSET - CAN_Address * 16);
 
-		if (pixelNum > 7) return;
+		if (pixelNum > 15) return;
 	} else {
 		return; // ignore any other cases
 	}
@@ -196,15 +196,15 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 	switch (command) {
 		case COMMAND_REQ_SET_COLOR_RGB8:
 			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
-				for (uint8_t i=0; i<8; i++) { // 8 pixels starts from pixelNum
-					Set_Pixel_Color_RGB8(pixelNum+i, msgData[i]);
+				for (uint8_t i=0; i<8; i++) { // 8 pixels starts from pixelNum*8
+					Set_Pixel_Color_RGB8(pixelNum*8+i, msgData[i]);
 				}
 			}
 			break;
 		case COMMAND_REQ_SET_COLOR_RGB12:
 			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
 				uint8_t R = 0, G = 0, B = 0;
-				for (uint8_t i=0; i<4; i++) { // 4 pixels starts from pixelNum
+				for (uint8_t i=0; i<4; i++) { // 4 pixels starts from pixelNum*4
 					switch (i) {
 					case 0:
 						R = msgData[1] >> 4;
@@ -227,14 +227,14 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 						B = msgData[6] & 0xF;
 						break;
 					}
-					Set_Pixel_Color_RGB12(pixelNum+i, R, G, B);
+					Set_Pixel_Color_RGB12(pixelNum*4+i, R, G, B);
 				}
 			}
 			break;
 		case COMMAND_REQ_SET_COLOR_RGB24:
 			if (Test_Common_Event_Clr(EVNT_RESET_FILLING)) { // ignore external commands if indicate something
-				for (uint8_t i=0; i<2; i++) { // 2 pixels starts from pixelNum
-					Set_Pixel_Color_RGB24(pixelNum+i, msgData[1+i*3], msgData[2+i*3], msgData[3+i*3]);
+				for (uint8_t i=0; i<2; i++) { // 2 pixels starts from pixelNum*2
+					Set_Pixel_Color_RGB24(pixelNum*2+i, msgData[1+i*3], msgData[2+i*3], msgData[3+i*3]);
 				}
 			}
 			break;
@@ -284,9 +284,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 }
 
 void CAN_Send(uint8_t msgData[], uint8_t len) {
-	if (CAN_Address == 0 &&
-			msgData[0] != COMMAND_RES_CLICK_ON &&
-			msgData[0] != COMMAND_RES_CLICK_OFF) {
+	if (CAN_Address == 0 && msgData[0] != COMMAND_RES_CLICK) {
 		return;
 	}
 
@@ -304,18 +302,4 @@ void CAN_Send(uint8_t msgData[], uint8_t len) {
 			Error_Handler();
 		}
 	}
-}
-
-void CAN_Send_Click(uint8_t pixelNum, bool click, uint8_t status, uint16_t value) {
-	uint8_t msgData[8];
-	uint8_t len = 0;
-	msgData[len++] = click ? COMMAND_RES_CLICK_ON : COMMAND_RES_CLICK_OFF;
-	msgData[len++] = pixelNum;
-	msgData[len++] = status;
-	if (click) {
-		msgData[len++] = (value >> 8) & 0xFF;
-		msgData[len++] = value & 0xFF;
-	}
-
-	CAN_Send(msgData, len);
 }
