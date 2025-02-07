@@ -94,7 +94,8 @@ void Sensors_Event_loop() {
 		for (uint8_t attempts=0; attempts<10; attempts++) {
 			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 			if (success) {
-				Sensors[p].Offset = result;
+				GlobalConfig.config.Sensor_Offset[p] = result;
+				Save_Global_Config();
 				break;
 			}
 		}
@@ -111,8 +112,8 @@ void Sensors_Event_loop() {
 			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 			if (success) {
 				uint16_t diff = 0;
-				if (result > Sensors[p].Offset) {
-					diff = result - Sensors[p].Offset;
+				if (result > GlobalConfig.config.Sensor_Offset[p]) {
+					diff = result - GlobalConfig.config.Sensor_Offset[p];
 				}
 
 				if (diff < MIN_SENSOR_SENS) {
@@ -140,8 +141,8 @@ void Sensors_Event_loop() {
 
 		Sensors[p].DefectCnt = 0;
 		Sensors[p].Value = 0;
-		if (result > Sensors[p].Offset) {
-			Sensors[p].Value = (result - Sensors[p].Offset) * GlobalConfig.config.Sensor_Coeff[p];
+		if (result > GlobalConfig.config.Sensor_Offset[p]) {
+			Sensors[p].Value = (result - GlobalConfig.config.Sensor_Offset[p]) * GlobalConfig.config.Sensor_Coeff[p];
 			if (Sensors[p].Value > SENSOR_SCALE) Sensors[p].Value = SENSOR_SCALE;
 		}
 

@@ -65,6 +65,7 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 	configNVRAM->config.Sensor_Click_Hysteresis = DEFAULT_CLICK_HYSTERESIS;
 
 	for (uint8_t i=0; i<NUM_PIXELS; i++) {
+		configNVRAM->config.Sensor_Offset[i] = 0;
 		configNVRAM->config.Sensor_Coeff[i] = DEFAULT_SENSOR_COEFF;
 		configNVRAM->config.Sensor_Defect[i] = false;
 	}

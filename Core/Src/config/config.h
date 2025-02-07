@@ -12,6 +12,7 @@ typedef struct {
 	uint16_t Sensor_Click_Threshold;
 	uint16_t Sensor_Click_Hysteresis;
 	uint16_t Sensor_Coeff[NUM_PIXELS];
+	uint16_t Sensor_Offset[NUM_PIXELS];
 	bool Sensor_Defect[NUM_PIXELS];
 } Config_t;
 

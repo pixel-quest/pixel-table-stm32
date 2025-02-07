@@ -5,7 +5,6 @@ typedef struct {
 	uint16_t Value;
 	uint16_t Dacc; // RC filter
 	uint16_t Dout; // RC filter
-	uint16_t Offset;
 	uint8_t DefectCnt;
 	bool Click;
 	bool NeedSend;
