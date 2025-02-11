@@ -46,7 +46,7 @@ typedef float fl_t;	///< float type
 // WS2812B — RGB, 800kHz;
 // SK6812  — RGBW, 800kHz
 
-#define USE_GAMMA_CORRECTION 1 ///< Gamma-correction should fix red&green, try for yourself
+#define USE_GAMMA_CORRECTION 0 ///< Gamma-correction should fix red&green, try for yourself
 
 #define TIM_NUM	   		4  ///< Timer number
 #define TIM_CH	   		TIM_CHANNEL_3  ///< Timer's PWM channel

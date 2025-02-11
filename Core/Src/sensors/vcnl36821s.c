@@ -53,9 +53,7 @@ bool vcnl36821s_init() {
 bool vcnl36821s_read(uint8_t reg, uint16_t *dest) {
 	HAL_StatusTypeDef status;
 
-	__disable_irq();
 	status = HAL_I2C_Mem_Read(&hi2c, VCNL36821S_SLAVE_ADDRESS, reg, I2C_MEMADD_SIZE_8BIT, (uint8_t*)dest, 2, VCNL36821S_I2C_TIMEOUT);
-	__enable_irq();
 	if (status == HAL_BUSY)
 		I2C_ClearBusyFlagErratum(&hi2c, VCNL36821S_I2C_TIMEOUT);
 	else if (status != HAL_OK) {

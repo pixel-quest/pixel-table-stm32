@@ -120,9 +120,9 @@ void Idle_Rainbow_If_Needed() {
 
 		for (uint8_t p=0; p<NUM_PIXELS; p++) {
 			if (Sensors[p].Click) {
-				ARGB_SetRGB(p, 0, 0, 0);
+				Set_Pixel_Color_RGB24(p, 0, 255, 0);
 			} else {
-				ARGB_SetRGB(p, R, G, B);
+				Set_Pixel_Color_RGB24(p, 0, 0, 0);
 			}
 		}
 	}

@@ -3,7 +3,7 @@
 
 // Defines
 #define hi2c 						hi2c1
-#define VCNL36821S_I2C_TIMEOUT 		10
+#define VCNL36821S_I2C_TIMEOUT 		1
 #define VCNL36821S_SLAVE_ADDRESS	0x60 << 1
 
 // Table 1 Registers

@@ -55,6 +55,7 @@ void Select_Sensor(uint8_t p) {
 		GPIO_InitStruct.Pin = Sensor_Pins[i].pin;
 		LL_GPIO_Init(Sensor_Pins[i].port, &GPIO_InitStruct);
 	}
+	HAL_Delay(1);
 }
 
 void Reset_Sensor_Value(uint8_t p) {
@@ -83,109 +84,108 @@ void Sensors_Config() {
 }
 
 void Sensors_Event_loop() {
-	static uint8_t p = 0;
+	static uint8_t s = 0;
 	static uint16_t result = 0;
 	static bool success = false;
 
-	Select_Sensor(p);
+	Select_Sensor(s);
 
 	// ========= CALIBRATE_ZERO
-	if (Test_Pixel_Event_Done(p, EVNT_CALIBRATE_ZERO)) {
+	if (Test_Pixel_Event_Done(s, EVNT_CALIBRATE_ZERO)) {
 		for (uint8_t attempts=0; attempts<10; attempts++) {
 			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 			if (success) {
-				GlobalConfig.config.Sensor_Offset[p] = result;
+				GlobalConfig.config.Sensor_Offset[s] = result;
 				Save_Global_Config();
 				break;
 			}
 		}
 		if (success) {
-			Set_Pixel_Green_msec(p, 200);
+			Set_Pixel_Green_msec(s, 200);
 		} else {
-			Set_Pixel_Red_msec(p, 200);
+			Set_Pixel_Red_msec(s, 200);
 		}
 	}
 
 	// ========= CALIBRATE_SENS
-	if (Test_Pixel_Event_Done(p, EVNT_CALIBRATE_SENS)) {
+	if (Test_Pixel_Event_Done(s, EVNT_CALIBRATE_SENS)) {
 		for (uint8_t attempts=0; attempts<10; attempts++) {
 			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 			if (success) {
 				uint16_t diff = 0;
-				if (result > GlobalConfig.config.Sensor_Offset[p]) {
-					diff = result - GlobalConfig.config.Sensor_Offset[p];
+				if (result > GlobalConfig.config.Sensor_Offset[s]) {
+					diff = result - GlobalConfig.config.Sensor_Offset[s];
 				}
 
 				if (diff < MIN_SENSOR_SENS) {
 					success = false;
 				} else {
-					GlobalConfig.config.Sensor_Coeff[p] = SENSOR_SCALE / diff;
+					GlobalConfig.config.Sensor_Coeff[s] = SENSOR_SCALE / diff;
 					Save_Global_Config();
 				}
 				break;
 			}
 		}
 		if (success) {
-			Set_Pixel_Green_msec(p, 200);
+			Set_Pixel_Green_msec(s, 200);
 		} else {
-			Set_Pixel_Red_msec(p, 200);
+			Set_Pixel_Red_msec(s, 200);
 		}
 	}
 
 	success = false;
-	if (!GlobalConfig.config.Sensor_Defect[p]) {
+	if (!GlobalConfig.config.Sensor_Defect[s]) {
 		success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 	}
 
 	if (success) {
 
-		Sensors[p].DefectCnt = 0;
-		Sensors[p].Value = 0;
-		if (result > GlobalConfig.config.Sensor_Offset[p]) {
-			Sensors[p].Value = (result - GlobalConfig.config.Sensor_Offset[p]) * GlobalConfig.config.Sensor_Coeff[p];
-			if (Sensors[p].Value > SENSOR_SCALE) Sensors[p].Value = SENSOR_SCALE;
+		Sensors[s].DefectCnt = 0;
+		Sensors[s].Value = 0;
+		if (result > GlobalConfig.config.Sensor_Offset[s]) {
+			Sensors[s].Value = (result - GlobalConfig.config.Sensor_Offset[s]) * GlobalConfig.config.Sensor_Coeff[s];
+			if (Sensors[s].Value > SENSOR_SCALE) Sensors[s].Value = SENSOR_SCALE;
 		}
 
 		// RC filter
-		Sensors[p].Dacc = Sensors[p].Dacc + Sensors[p].Value - Sensors[p].Dout;
-		Sensors[p].Dout = Sensors[p].Dacc / GlobalConfig.config.RC_Filter_K * 10;
+		Sensors[s].Dacc = Sensors[s].Dacc + Sensors[s].Value - Sensors[s].Dout;
+		Sensors[s].Dout = Sensors[s].Dacc / GlobalConfig.config.RC_Filter_K * 10;
 
-		if (Sensors[p].Click && Sensors[p].Dout < (GlobalConfig.config.Sensor_Click_Threshold - GlobalConfig.config.Sensor_Click_Hysteresis)) {
-		   Sensors[p].Click = false;
-		   Sensors[p].NeedSend = true;
-		} else if (!Sensors[p].Click && Sensors[p].Dout > (GlobalConfig.config.Sensor_Click_Threshold + GlobalConfig.config.Sensor_Click_Hysteresis)) {
-		   Sensors[p].Click = true;
-		   Sensors[p].NeedSend = true;
+		if (Sensors[s].Click && Sensors[s].Dout < (GlobalConfig.config.Sensor_Click_Threshold - GlobalConfig.config.Sensor_Click_Hysteresis)) {
+		   Sensors[s].Click = false;
+		   Sensors[s].NeedSend = true;
+		} else if (!Sensors[s].Click && Sensors[s].Dout > (GlobalConfig.config.Sensor_Click_Threshold + GlobalConfig.config.Sensor_Click_Hysteresis)) {
+		   Sensors[s].Click = true;
+		   Sensors[s].NeedSend = true;
 		}
 
 	} else {
 
-		if (Sensors[p].DefectCnt < FAIL_STATUS_THRESHOLD) {
-			Sensors[p].DefectCnt++;
+		if (Sensors[s].DefectCnt < FAIL_STATUS_THRESHOLD) {
+			Sensors[s].DefectCnt++;
 		}
 
 		// Autodefect
-		if (!GlobalConfig.config.Sensor_Defect[p] &&
-				Sensors[p].DefectCnt >= FAIL_STATUS_THRESHOLD) {
-			GlobalConfig.config.Sensor_Defect[p] = true;
-			Save_Global_Config();
-
-			Sensors[p].Click = false;
-			Sensors[p].NeedSend = true;
-		}
+//		if (!GlobalConfig.config.Sensor_Defect[s] && Sensors[s].DefectCnt >= FAIL_STATUS_THRESHOLD) {
+//			GlobalConfig.config.Sensor_Defect[s] = true;
+//			Save_Global_Config();
+//
+//			Sensors[s].Click = false;
+//			Sensors[s].NeedSend = true;
+//		}
 
 	}
 
-	if (++p >= NUM_PIXELS) { // time to send clicks and loop index
+	if (++s >= NUM_PIXELS) { // time to send clicks and loop index
 	    uint8_t msgData[8];
 	    uint8_t len=0;
 		msgData[len++] = COMMAND_RES_CLICK;
 
-		for (p = 0; p < NUM_PIXELS; p++) {
-			if (Sensors[p].NeedSend) {
+		for (s = 0; s < NUM_PIXELS; s++) {
+			if (Sensors[s].NeedSend) {
 				// Address | Defect | Click
-				msgData[len++] = (p << 2) | (GlobalConfig.config.Sensor_Defect[p] << 1) | Sensors[p].Click;
-				Sensors[p].NeedSend = false;
+				msgData[len++] = (s << 2) | (GlobalConfig.config.Sensor_Defect[s] << 1) | Sensors[s].Click;
+				Sensors[s].NeedSend = false;
 			}
 			if (len == 8) {
 				CAN_Send(msgData, len);
@@ -194,6 +194,6 @@ void Sensors_Event_loop() {
 		}
 		if (len > 1) CAN_Send(msgData, len);
 
-		p = 0;
+		s = 0;
 	}
 }
