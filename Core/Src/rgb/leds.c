@@ -90,7 +90,7 @@ void Reset_Idle_Mode() {
 
 void Idle_Rainbow_If_Needed() {
 	static uint8_t RAINBOW_STAGE = 0;
-	static uint8_t R = DEFAULT_BRIGHT;
+	static uint8_t R = MAX_RAINBOW_BRIGHT;
 	static uint8_t G = 0;
 	static uint8_t B = 0;
 
@@ -99,19 +99,19 @@ void Idle_Rainbow_If_Needed() {
 
 		switch (RAINBOW_STAGE) {
 		case 0:
-			if (++G >= DEFAULT_BRIGHT) RAINBOW_STAGE++;
+			if (++G >= MAX_RAINBOW_BRIGHT) RAINBOW_STAGE++;
 			break;
 		case 1:
 			if (--R == 0) RAINBOW_STAGE++;
 			break;
 		case 2:
-			if (++B >= DEFAULT_BRIGHT) RAINBOW_STAGE++;
+			if (++B >= MAX_RAINBOW_BRIGHT) RAINBOW_STAGE++;
 			break;
 		case 3:
 			if (--G == 0) RAINBOW_STAGE++;
 			break;
 		case 4:
-			if (++R >= DEFAULT_BRIGHT) RAINBOW_STAGE++;
+			if (++R >= MAX_RAINBOW_BRIGHT) RAINBOW_STAGE++;
 			break;
 		case 5:
 			if (--B == 0) RAINBOW_STAGE = 0;
@@ -120,9 +120,9 @@ void Idle_Rainbow_If_Needed() {
 
 		for (uint8_t p=0; p<NUM_PIXELS; p++) {
 			if (Sensors[p].Click) {
-				Set_Pixel_Color_RGB24(p, 0, 255, 0);
+				Set_Pixel_Color_RGB24(p, B, R, G);
 			} else {
-				Set_Pixel_Color_RGB24(p, 0, 0, 0);
+				Set_Pixel_Color_RGB24(p, R, G, B);
 			}
 		}
 	}

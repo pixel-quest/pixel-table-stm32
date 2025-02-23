@@ -64,7 +64,7 @@ void Reset_Sensor_Value(uint8_t p) {
 	Sensors[p].Dout = 0;
 	Sensors[p].DefectCnt = 0;
 	Sensors[p].Click = false;
-	Sensors[p].NeedSend = false;
+	Sensors[p].NeedSend = true; // send all on start
 }
 
 void Sensors_Config() {
@@ -87,6 +87,8 @@ void Sensors_Event_loop() {
 	static uint8_t s = 0;
 	static uint16_t result = 0;
 	static bool success = false;
+	static uint8_t msgData[8] = {COMMAND_RES_CLICK,0,0,0,0,0,0,0};
+	static uint8_t len=1;
 
 	Select_Sensor(s);
 
@@ -112,8 +114,9 @@ void Sensors_Event_loop() {
 		for (uint8_t attempts=0; attempts<10; attempts++) {
 			success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 			if (success) {
-				uint16_t diff = 0;
-				if (result > GlobalConfig.config.Sensor_Offset[s]) {
+				uint16_t diff = SENSOR_SCALE;
+				if (result > GlobalConfig.config.Sensor_Offset[s] &&
+						result - GlobalConfig.config.Sensor_Offset[s] < SENSOR_SCALE) {
 					diff = result - GlobalConfig.config.Sensor_Offset[s];
 				}
 
@@ -138,7 +141,7 @@ void Sensors_Event_loop() {
 		success = vcnl36821s_read(VCNL36821S_PS_DATA, &result);
 	}
 
-	if (success) {
+	if (success && result > 0) {
 
 		Sensors[s].DefectCnt = 0;
 		Sensors[s].Value = 0;
@@ -159,41 +162,38 @@ void Sensors_Event_loop() {
 		   Sensors[s].NeedSend = true;
 		}
 
-	} else {
+	} else if (Sensors[s].DefectCnt == FAIL_STATUS_THRESHOLD/2) { // freezing suspicion
+		vcnl36821s_init(); // try to restart
+		Sensors[s].DefectCnt++;
 
-		if (Sensors[s].DefectCnt < FAIL_STATUS_THRESHOLD) {
-			Sensors[s].DefectCnt++;
-		}
+	} else if (Sensors[s].DefectCnt < FAIL_STATUS_THRESHOLD) {
 
-		// Autodefect
-//		if (!GlobalConfig.config.Sensor_Defect[s] && Sensors[s].DefectCnt >= FAIL_STATUS_THRESHOLD) {
-//			GlobalConfig.config.Sensor_Defect[s] = true;
-//			Save_Global_Config();
-//
-//			Sensors[s].Click = false;
-//			Sensors[s].NeedSend = true;
-//		}
+		Sensors[s].DefectCnt++;
 
+	} else if (!GlobalConfig.config.Sensor_Defect[s]) {
+
+		GlobalConfig.config.Sensor_Defect[s] = true; // autodefect
+		Save_Global_Config();
+
+		Sensors[s].Click = false;
+		Sensors[s].NeedSend = true;
 	}
 
-	if (++s >= NUM_PIXELS) { // time to send clicks and loop index
-	    uint8_t msgData[8];
-	    uint8_t len=0;
-		msgData[len++] = COMMAND_RES_CLICK;
+	if (Sensors[s].NeedSend) {
+		msgData[len++] = (s << 2) | (GlobalConfig.config.Sensor_Defect[s] << 1) | Sensors[s].Click; // Address | Defect | Click
+		Sensors[s].NeedSend = false;
 
-		for (s = 0; s < NUM_PIXELS; s++) {
-			if (Sensors[s].NeedSend) {
-				// Address | Defect | Click
-				msgData[len++] = (s << 2) | (GlobalConfig.config.Sensor_Defect[s] << 1) | Sensors[s].Click;
-				Sensors[s].NeedSend = false;
-			}
-			if (len == 8) {
-				CAN_Send(msgData, len);
-				len=1;
-			}
+		if (len == 8) {
+			CAN_Send(msgData, len);
+			len=1;
 		}
-		if (len > 1) CAN_Send(msgData, len);
+	}
 
-		s = 0;
+	if (++s >= NUM_PIXELS) {
+	    if (len > 1) { // send the remaining clicks
+	    	CAN_Send(msgData, len);
+	    	len=1;
+	    }
+		s = 0; // loop index
 	}
 }

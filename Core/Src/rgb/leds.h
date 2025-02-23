@@ -2,8 +2,9 @@
 #define SRC_RGB_LEDS_H_
 
 #define EVENT_IDLE_MODE_TIMEOUT		5000 // ms
-#define EVENT_IDLE_MODE_STEP		30 // ms
+#define EVENT_IDLE_MODE_STEP		15 // ms
 #define DEFAULT_BRIGHT				100
+#define MAX_RAINBOW_BRIGHT			200
 
 void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color);
 void Set_Pixel_Color_RGB12(uint8_t p, uint8_t R, uint8_t G, uint8_t B);

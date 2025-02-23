@@ -85,21 +85,18 @@ uint8_t FormatRespRegCommand(uint8_t* pData, uint8_t pixelNum, uint8_t regNum) {
 	case 1: // REGISTER_RC_FILTER_K
 		value = (int32_t)GlobalConfig.config.RC_Filter_K;
 		break;
-	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
-		value = (int32_t)GlobalConfig.config.Click_Off_Dupl_Msgs;
-	    break;
-	case 6: // REGISTER_CLICK_ON_DUPL_PER
-		value = (int32_t)GlobalConfig.config.Click_Dupl_Per;
-	    break;
-	case 17: // REGISTER_FRAME_COEFF
+	case 2: // REGISTER_CLICK_THRESHOLD
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Threshold;
+		break;
+	case 3: // REGISTER_CLICK_HYSTERESIS
+		value = (int32_t)GlobalConfig.config.Sensor_Click_Hysteresis;
+		break;
+	case 7: // REGISTER_SENSOR_OFFSET
+		value = (int32_t)GlobalConfig.config.Sensor_Offset[pixelNum];
+		break;
+	case 8: // REGISTER_SENSOR_COEFF
 		value = (int32_t)GlobalConfig.config.Sensor_Coeff[pixelNum];
 		break;
-	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
-		value = (int32_t)GlobalConfig.config.Sensor_Click_Threshold;
-	    break;
-	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
-		value = (int32_t)GlobalConfig.config.Sensor_Click_Hysteresis;
-	    break;
 	}
 
 	uint8_t* pValue = (uint8_t *)&value;
@@ -120,23 +117,17 @@ uint8_t WriteReg(uint8_t* pData, uint8_t pixelNum, uint8_t regNum, int32_t value
 		if (value < 10 || value > 50) break;
 		GlobalConfig.config.RC_Filter_K = (uint8_t)value;
 		break;
-	case 4: // REGISTER_CLICK_OFF_DUPL_MSGS
-		GlobalConfig.config.Click_Off_Dupl_Msgs = (uint8_t)value;
-		break;
-	case 6: // REGISTER_CLICK_ON_DUPL_PER
-		GlobalConfig.config.Click_Dupl_Per = (uint8_t)value;
-		break;
-	case 17: // REGISTER_FRAME_COEFF
-		if (value < 1 || value > 255) break;
-		GlobalConfig.config.Sensor_Coeff[pixelNum] = (uint16_t)value;
-		break;
-	case 19: // REGISTER_FRAME_CLICK_THRESHOLD
-		if (value < 1 || value > 255) break;
+	case 2: // REGISTER_CLICK_THRESHOLD
+		if (value < 1 || value >= SENSOR_SCALE) break;
 		GlobalConfig.config.Sensor_Click_Threshold = (uint16_t)value;
 		break;
-	case 20: // REGISTER_FRAME_CLICK_HYSTERESIS
-		if (value < 1 || value > 255) break;
+	case 3: // REGISTER_CLICK_HYSTERESIS
+		if (value < 1 || value > SENSOR_SCALE/2) break;
 		GlobalConfig.config.Sensor_Click_Hysteresis = (uint16_t)value;
+		break;
+	case 8: // REGISTER_SENSOR_COEFF
+		if (value < 1 || value > 255) break;
+		GlobalConfig.config.Sensor_Coeff[pixelNum] = (uint16_t)value;
 		break;
 	}
 
@@ -263,7 +254,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 				pixelNum,
 				msgData[2]
 			);
-			CAN_Send(answerData, TransmitDataSize-2); // cut off 2 bytes CRC for CAN
+			CAN_Send(answerData, TransmitDataSize);
 			break;
 		case COMMAND_REQ_WRITE_REG: {
 				uint8_t answerData[8];
@@ -274,7 +265,7 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
 					(int32_t)msgData[3] << 24 | (int32_t)msgData[4] << 16 | (int32_t)msgData[5] << 8 | (int32_t)msgData[6]
 				);
 				if (CAN_Address == 0) break; // нулевых устройств мб несколько, нельзя отвечать
-				CAN_Send(answerData, TransmitDataSize-2); // cut off 2 bytes CRC for CAN
+				CAN_Send(answerData, TransmitDataSize);
 			}
 			break;
 		case COMMAND_REQ_RESTART:

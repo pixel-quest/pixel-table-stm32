@@ -5,7 +5,7 @@ union ConfigNVRAM GlobalConfig;
 
 // Дополнительный контроль адекватности конфига
 // помогает проверять также при сохранении
-#define SPECIAL_CHARS (uint16_t)0xABCD
+#define SPECIAL_CHARS (uint16_t)0xABBD
 
 void Read_Global_Config() {
 	bool goodPages[FLASH_CONFIG_PAGES];
@@ -18,8 +18,6 @@ void Read_Global_Config() {
 
 	// If bad values set to default
 	if (GlobalConfig.config.Special_Chars != SPECIAL_CHARS ||
-			GlobalConfig.config.Click_Dupl_Per == 0 ||
-			GlobalConfig.config.Click_Off_Dupl_Msgs == 0 ||
 			GlobalConfig.config.Sensor_Click_Threshold == 0)
 		atLeastOneSuccess = false;
 
@@ -56,8 +54,6 @@ void Set_Default_Config(union ConfigNVRAM *configNVRAM) {
 
 	// General
 	configNVRAM->config.Special_Chars = SPECIAL_CHARS;
-	configNVRAM->config.Click_Dupl_Per = DEFAULT_CLICK_DUPLICATE_PER;
-	configNVRAM->config.Click_Off_Dupl_Msgs = DEFAULT_CLICK_OFF_DUPLICATE_MESSAGES;
 
 	// Sensors
 	configNVRAM->config.RC_Filter_K = DEFAULT_RC_FILTER_K;
