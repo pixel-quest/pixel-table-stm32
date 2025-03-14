@@ -7,7 +7,6 @@ typedef struct {
 	uint16_t Dout; // RC filter
 	uint8_t DefectCnt;
 	bool Click;
-	bool NeedSend;
 } Sensor_t;
 
 extern Sensor_t Sensors[NUM_PIXELS];

@@ -64,31 +64,35 @@ void Reset_Sensor_Value(uint8_t p) {
 	Sensors[p].Dout = 0;
 	Sensors[p].DefectCnt = 0;
 	Sensors[p].Click = false;
-	Sensors[p].NeedSend = true; // send all on start
 }
 
 void Sensors_Config() {
 	bool success = false;
-	for (uint8_t p=0; p<NUM_PIXELS; p++) {
+	for (uint8_t s=0; s<NUM_PIXELS; s++) {
 		HAL_Delay(100);
-		Reset_Sensor_Value(p);
-		Select_Sensor(p);
+		Reset_Sensor_Value(s);
+		Select_Sensor(s);
 		success = vcnl36821s_init();
 		if (success) {
-			Set_Pixel_Green_msec(p, 200);
+			if (GlobalConfig.config.Sensor_Defect[s]) { // unDefect if it was
+				GlobalConfig.config.Sensor_Defect[s] = false;
+				Save_Global_Config();
+			}
+			Set_Pixel_Green_msec(s, 200);
 		} else {
-			Set_Pixel_Red_msec(p, 200);
+			Set_Pixel_Red_msec(s, 200);
 		}
 		Led_Event_loop();
 	}
 }
 
 void Sensors_Event_loop() {
-	static uint8_t s = 0;
+	static uint8_t p = 0;
 	static uint16_t result = 0;
 	static bool success = false;
-	static uint8_t msgData[8] = {COMMAND_RES_CLICK,0,0,0,0,0,0,0};
-	static uint8_t len=1;
+	static bool needSend = true; // send all on start
+
+	uint8_t s = p % NUM_PIXELS; // искусственно проредим отправку нажатий вдвое
 
 	Select_Sensor(s);
 
@@ -156,10 +160,10 @@ void Sensors_Event_loop() {
 
 		if (Sensors[s].Click && Sensors[s].Dout < (GlobalConfig.config.Sensor_Click_Threshold - GlobalConfig.config.Sensor_Click_Hysteresis)) {
 		   Sensors[s].Click = false;
-		   Sensors[s].NeedSend = true;
+		   needSend = true;
 		} else if (!Sensors[s].Click && Sensors[s].Dout > (GlobalConfig.config.Sensor_Click_Threshold + GlobalConfig.config.Sensor_Click_Hysteresis)) {
 		   Sensors[s].Click = true;
-		   Sensors[s].NeedSend = true;
+		   needSend = true;
 		}
 
 	} else if (Sensors[s].DefectCnt == FAIL_STATUS_THRESHOLD/2) { // freezing suspicion
@@ -176,24 +180,31 @@ void Sensors_Event_loop() {
 		Save_Global_Config();
 
 		Sensors[s].Click = false;
-		Sensors[s].NeedSend = true;
+		needSend = true;
 	}
 
-	if (Sensors[s].NeedSend) {
-		msgData[len++] = (s << 2) | (GlobalConfig.config.Sensor_Defect[s] << 1) | Sensors[s].Click; // Address | Defect | Click
-		Sensors[s].NeedSend = false;
+	// Если каждый сенсор отправлять одним байтом (адрес + дефект + клик), потребуется 3 посылки по 8 байт + 1 посылка с 1 байтом,
+	// 	что очень долго и глупо, т.к у CAN большие накладные расходы, это приводит к тормозам
+	// Лучше все 25 нажатий запихнуть в одну посылку 25 * 2 = 50 / 8 = 7 байт (+ байт команды) и отправлять не каждый кадр, а реже.
+	// Опрос одного сенсора 1.2 msec * 25 шт = 30 мсек период, нет смысла так часто, можно смело отправлять через один
+	// 	чтобы разгрузить линию для других сегментов
 
-		if (len == 8) {
-			CAN_Send(msgData, len);
-			len=1;
+	if (++p >= NUM_PIXELS*2) { // искусственно проредим отправку нажатий вдвое
+		if (needSend) { // send if needed
+			uint8_t msgData[8] = {COMMAND_RES_CLICK,0,0,0,0,0,0,0}; // начиная с первого байта заполним посылку двойками (Defect | Click)
+			uint8_t pos;
+			uint8_t offset;
+
+			for (s = 0; s < NUM_PIXELS; s++) {
+				pos = s / 4 + 1; // по 4 сенсора на байт, начиная с первого
+				offset = s % 4; // 3 2 1 0 7 6 5 4 ...
+				msgData[pos] |= (GlobalConfig.config.Sensor_Defect[s] << (offset*2 + 1)) | (Sensors[s].Click << (offset*2)); // Defect | Click
+			}
+
+			CAN_Send(msgData, 8);
+			needSend = false;
 		}
-	}
 
-	if (++s >= NUM_PIXELS) {
-	    if (len > 1) { // send the remaining clicks
-	    	CAN_Send(msgData, len);
-	    	len=1;
-	    }
-		s = 0; // loop index
+	    p = 0; // loop index
 	}
 }

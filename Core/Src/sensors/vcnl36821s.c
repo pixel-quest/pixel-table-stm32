@@ -47,6 +47,9 @@ bool vcnl36821s_init() {
 
 	success &= vcnl36821s_write(VCNL36821S_PS_CONF34, 0x00, VCNL36821S_PS_SC | VCNL36821S_LED_I_156ma);
 
+	uint16_t result;
+	success &= vcnl36821s_read(VCNL36821S_PS_DATA, &result);
+
 	return success;
 }
 

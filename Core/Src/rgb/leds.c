@@ -54,12 +54,12 @@ void Set_Pixel_Green_msec(uint8_t p, uint32_t msec) {
 }
 
 void Set_Pixel_Red_msec(uint8_t p, uint32_t msec) {
-	Set_Pixel_Color_RGB24(p, 0, DEFAULT_BRIGHT, 0);
+	Set_Pixel_Color_RGB24(p, DEFAULT_BRIGHT, 0, 0);
 	Set_Pixel_Event(p, EVNT_RESET_PIXEL_COLOR, msec);
 }
 
 void Set_Pixel_Yellow_msec(uint8_t p, uint32_t msec) {
-	Set_Pixel_Color_RGB24(p, 0, DEFAULT_BRIGHT, 0);
+	Set_Pixel_Color_RGB24(p, DEFAULT_BRIGHT, DEFAULT_BRIGHT, 0);
 	Set_Pixel_Event(p, EVNT_RESET_PIXEL_COLOR, msec);
 }
 
