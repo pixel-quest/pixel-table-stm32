@@ -34,17 +34,20 @@ void Set_Pixel_Color_RGB8(uint8_t p, uint8_t color) {
 		if ((color & SET_COLOR_B_BITMASK) != 0) B = bright;
 	}
 
-	ARGB_SetRGB(p, R, G, B);
+	ARGB_SetRGB(p*2, R, G, B);
+	ARGB_SetRGB(p*2+1, R, G, B);
 }
 
 // RRRR GGGG BBBB - 12 bit color
 void Set_Pixel_Color_RGB12(uint8_t p, uint8_t R, uint8_t G, uint8_t B) {
-	ARGB_SetRGB(p, getBrightCRT(R*17), getBrightCRT(G*17), getBrightCRT(B*17));
+	ARGB_SetRGB(p*2, getBrightCRT(R*17), getBrightCRT(G*17), getBrightCRT(B*17));
+	ARGB_SetRGB(p*2+1, getBrightCRT(R*17), getBrightCRT(G*17), getBrightCRT(B*17));
 }
 
 // R-byte G-byte B-byte - 24 bit color
 void Set_Pixel_Color_RGB24(uint8_t p, uint8_t R, uint8_t G, uint8_t B) {
-	ARGB_SetRGB(p, getBrightCRT(R), getBrightCRT(G), getBrightCRT(B));
+	ARGB_SetRGB(p*2, getBrightCRT(R), getBrightCRT(G), getBrightCRT(B));
+	ARGB_SetRGB(p*2+1, getBrightCRT(R), getBrightCRT(G), getBrightCRT(B));
 }
 
 // Timouted colors

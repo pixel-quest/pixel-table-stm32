@@ -4,7 +4,8 @@
 #include "stdbool.h"
 #include "string.h"
 
-#define NUM_PIXELS 		25
+#define NUM_PIXELS 			20
+#define NUM_WS2812_LEDS 	40
 
 // ======= FLASH Config
 #define FLASH_END_ADDR 				    0x0800FFFFU // STM32F103C8

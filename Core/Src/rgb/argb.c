@@ -108,10 +108,10 @@ volatile u8_t PWM_HI;    ///< PWM Code HI Log.1 period
 volatile u8_t PWM_LO;    ///< PWM Code LO Log.1 period
 
 #ifdef SK6812
-#define NUM_BYTES (4 * NUM_PIXELS) ///< Strip size in bytes
+#define NUM_BYTES (4 * NUM_WS2812_LEDS) ///< Strip size in bytes
 #define PWM_BUF_LEN (4 * 8 * 2)    ///< Pack len * 8 bit * 2 LEDs
 #else
-#define NUM_BYTES (3 * NUM_PIXELS) ///< Strip size in bytes
+#define NUM_BYTES (3 * NUM_WS2812_LEDS) ///< Strip size in bytes
 #define PWM_BUF_LEN (3 * 8 * 2)    ///< Pack len * 8 bit * 2 LEDs
 #endif
 
@@ -212,7 +212,7 @@ void ARGB_SetBrightness(u8_t br) {
  */
 void ARGB_SetRGB(u16_t i, u8_t r, u8_t g, u8_t b) {
     // overflow protection
-    if (i >= NUM_PIXELS) {
+    if (i >= NUM_WS2812_LEDS) {
         return;
     }
     // set brightness
@@ -278,7 +278,7 @@ void ARGB_SetWhite(u16_t i, u8_t w) {
  * @param[in] b Blue component  [0..255]
  */
 void ARGB_FillRGB(u8_t r, u8_t g, u8_t b) {
-    for (volatile u16_t i = 0; i < NUM_PIXELS; i++)
+    for (volatile u16_t i = 0; i < NUM_WS2812_LEDS; i++)
         ARGB_SetRGB(i, r, g, b);
 }
 
@@ -299,7 +299,7 @@ void ARGB_FillHSV(u8_t hue, u8_t sat, u8_t val) {
  * @param[in] w White component [0..255]
  */
 void ARGB_FillWhite(u8_t w) {
-    for (volatile u16_t i = 0; i < NUM_PIXELS; i++)
+    for (volatile u16_t i = 0; i < NUM_WS2812_LEDS; i++)
         ARGB_SetWhite(i, w);
 }
 
@@ -481,7 +481,7 @@ static void ARGB_TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma) {
         /* nothing to do */
     }
 // if data transfer
-    if (BUF_COUNTER < NUM_PIXELS) {
+    if (BUF_COUNTER < NUM_WS2812_LEDS) {
         // fill second part of buffer
         for (volatile u8_t i = 0; i < 8; i++) {
 #ifdef SK6812
@@ -496,7 +496,7 @@ static void ARGB_TIM_DMADelayPulseCplt(DMA_HandleTypeDef *hdma) {
 #endif
         }
         BUF_COUNTER++;
-    } else if (BUF_COUNTER < NUM_PIXELS + 2) { // if RET transfer
+    } else if (BUF_COUNTER < NUM_WS2812_LEDS + 2) { // if RET transfer
         memset((dma_siz *) &PWM_BUF[PWM_BUF_LEN / 2], 0, (PWM_BUF_LEN / 2)*sizeof(dma_siz)); // second part
         BUF_COUNTER++;
     } else { // if END of transfer
@@ -542,7 +542,7 @@ static void ARGB_TIM_DMADelayPulseHalfCplt(DMA_HandleTypeDef *hdma) {
     if (hdma != &DMA_HANDLE || htim != &TIM_HANDLE) return;
     if (BUF_COUNTER == 0) return; // if no data to transmit - return
     // if data transfer
-    if (BUF_COUNTER < NUM_PIXELS) {
+    if (BUF_COUNTER < NUM_WS2812_LEDS) {
         // fill first part of buffer
         for (volatile u8_t i = 0; i < 8; i++) {
 #ifdef SK6812
@@ -558,7 +558,7 @@ static void ARGB_TIM_DMADelayPulseHalfCplt(DMA_HandleTypeDef *hdma) {
 #endif
         }
         BUF_COUNTER++;
-    } else if (BUF_COUNTER < NUM_PIXELS + 2) { // if RET transfer
+    } else if (BUF_COUNTER < NUM_WS2812_LEDS + 2) { // if RET transfer
         memset((dma_siz *) &PWM_BUF[0], 0, (PWM_BUF_LEN / 2)*sizeof(dma_siz)); // first part
         BUF_COUNTER++;
     }
