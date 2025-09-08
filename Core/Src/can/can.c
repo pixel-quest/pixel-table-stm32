@@ -6,10 +6,11 @@
 #include "../sensors/sensors.h"
 
 uint8_t CAN_Address = 0;
-const IOPin_t SW1 = {GPIOA, LL_GPIO_PIN_14};
-const IOPin_t SW2 = {GPIOA, LL_GPIO_PIN_10};
-const IOPin_t SW3 = {GPIOA, LL_GPIO_PIN_9};
-const IOPin_t SW4 = {GPIOA, LL_GPIO_PIN_8};
+const IOPin_t SW1 = {GPIOA, LL_GPIO_PIN_10};
+const IOPin_t SW2 = {GPIOA, LL_GPIO_PIN_9};
+const IOPin_t SW3 = {GPIOA, LL_GPIO_PIN_8};
+const IOPin_t SW4 = {GPIOB, LL_GPIO_PIN_15};
+const IOPin_t SW5 = {GPIOB, LL_GPIO_PIN_14};
 
 void CAN_Filter_and_Start(uint16_t device_address) {
 	CAN_FilterTypeDef canFilterConfig;
@@ -62,7 +63,8 @@ void CAN_Config() {
 	CAN_Address = 	LL_GPIO_IsInputPinSet(SW1.port, SW1.pin) |
 					LL_GPIO_IsInputPinSet(SW2.port, SW2.pin) << 1 |
 					LL_GPIO_IsInputPinSet(SW3.port, SW3.pin) << 2 |
-					LL_GPIO_IsInputPinSet(SW4.port, SW4.pin) << 3;
+					LL_GPIO_IsInputPinSet(SW4.port, SW4.pin) << 3 |
+					LL_GPIO_IsInputPinSet(SW5.port, SW5.pin) << 4;
 
 	CAN_Filter_and_Start(CAN_Address);
 
